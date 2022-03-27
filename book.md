@@ -8,7 +8,7 @@
 
 | 题目 | 难度 | 链接 |
 | --- | --- | --- |
-| 两数之和 | Easy | https://leetcode-cn.com/problems/two-sum/ |
+| [1. 两数之和](https://leetcode-cn.com/problems/two-sum/) | Easy | https://leetcode-cn.com/problems/two-sum/ |
 
 ### 前缀和
 前缀和通常被用于“连续子序列之和/积”类型的题目中，它计算序列的前k个数之和并用哈希表存储。
@@ -16,7 +16,7 @@
 假设数组为nums，长度为n，我们想知道该数组存不存在和为target的“连续子数组”，用前缀和的伪代码如下：
 
 ```python
-m = {0:0} # 哈希表初始化
+m = {0:-1} # 哈希表初始化
 total = 0 # 保存前缀和
 for idx, num in enumerate(nums):
     total += num
@@ -28,10 +28,84 @@ for idx, num in enumerate(nums):
 
 | 题目 | 难度 | 链接 |
 | --- | --- | --- |
-| 和为 K 的子数组 | Medium | https://leetcode-cn.com/problems/subarray-sum-equals-k/ |
-| 统计「优美子数组」 | Medium | https://leetcode-cn.com/problems/count-number-of-nice-subarrays/ |
-| 路径总和Ⅲ | Medium | https://leetcode-cn.com/problems/path-sum-iii/ |
-| 连续数组 | Medium | https://leetcode-cn.com/problems/contiguous-array/ |
+| [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/) | Medium | https://leetcode-cn.com/problems/subarray-sum-equals-k/ |
+| [1248. 统计「优美子数组」](https://leetcode-cn.com/problems/count-number-of-nice-subarrays/) | Medium | https://leetcode-cn.com/problems/count-number-of-nice-subarrays/ |
+| [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/) | Medium | https://leetcode-cn.com/problems/path-sum-iii/ |
+| [525. 连续数组](https://leetcode-cn.com/problems/contiguous-array/) | Medium | https://leetcode-cn.com/problems/contiguous-array/ |
+#### [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/)
+
+```python
+class Solution(object):
+    def subarraySum(self, nums, k):
+        n = len(nums)
+        total = 0
+        mapping = {0:1} # 哈希表初始化
+        res = 0
+        for num in nums:
+            total += num
+            res += mapping.get(total-k, 0)
+            mapping[total] = mapping.get(total, 0) + 1
+        return res
+```
+
+#### [1248. 统计「优美子数组」](https://leetcode-cn.com/problems/count-number-of-nice-subarrays/)
+
+```python
+class Solution(object):
+    def numberOfSubarrays(self, nums, k):
+        n = len(nums)
+        total, res = 0, 0
+        m = {0: 1}
+        for idx, num in enumerate(nums):
+            if num%2:
+                total+=1
+            if total-k in m:
+                res += m[total-k]
+            m[total] = m.get(total, 0) + 1
+        return res
+```
+
+#### [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)
+
+```python
+class Solution:
+    def pathSum(self, root: TreeNode, targetSum: int) -> int:
+        prefix = {0:1}
+
+        def dfs(root, cur):
+            if not root:
+                return 0
+            
+            cur+=root.val # 更新前缀和
+            res = prefix.get(cur-targetSum, 0) # 查询当前是否有满足题意的路径
+
+            # dfs搜索
+            prefix[cur] = prefix.get(cur, 0) + 1
+            res += dfs(root.left, cur)
+            res += dfs(root.right, cur)
+            prefix[cur] -= 1
+
+            return res
+        
+        return dfs(root, 0)
+```
+
+#### 525. 连续数组
+
+```python
+class Solution(object):
+    def findMaxLength(self, nums):
+        pre_dict = {0: -1}
+        ret = pre_sum = 0
+        for index, num in enumerate(nums):
+            pre_sum += -1 if num == 0 else 1
+            if pre_sum in pre_dict:
+                ret = max(ret, index - pre_dict[pre_sum])
+            else:
+                pre_dict[pre_sum] = index
+        return ret
+```
+
 ## 链表
 
 对于链表，我们需要知道它和数组相比的优点和缺点。
@@ -115,6 +189,60 @@ def search(arr, k):
 
 ## 双指针
 ## 滑动窗口
+
+滑动窗口可以分为变长滑动窗口和固定窗口大小的滑动窗口。
+
+滑动窗口的适用范围：右指针向右移动时total一定变小/大，左指针向右移动时total一定变大/小，典型的适用场景是 正整数数组求和，正整数数组求积，注意，一定是正整数数组，如果是整数数组的话，right向右移动并不能保证子数组单调增或单调减，所以滑动窗口此时就并不适用了。
+
+体会二种滑动窗口，一种要找到大于target的最短子数组，一种要找到小于target的最长子数组。
+
+滑动窗口模板：
+
+```python
+# 找最短子数组大于target
+i,j = 0, 0
+total = 0
+res = float('inf')
+while j<n:
+    total += nums[j] # 根据题意，total会有所变化
+    while total>target: # 缩小左界，直到不满足题意
+        res = min(res, j-i+1)
+        total-=nums[i]
+        i+=1
+    j+=1 # 扩大右界
+```
+
+```python
+# 找最长子数组小于target
+i,j = 0, 0
+total = 0
+res = float('-inf')
+while j<n:
+    total += nums[j]
+    while total>target: # 缩小左界，直到满足题意
+        total-=nums[i]
+        i+=1
+    if total<target:
+        res = max(res, j-i+1)
+    j+=1 # 扩大右界
+```
+
+在第一种滑动窗口中，因为要寻找最短，所以是通过缩小左界去寻找的，而在第二种滑动窗口中，因为要寻找最长，所以是通过扩大右界去寻找的。
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [643. 子数组最大平均数 I](https://leetcode-cn.com/problems/maximum-average-subarray-i/) | Easy   | https://leetcode-cn.com/problems/maximum-average-subarray-i/ |
+| [3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) | Medium | https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/ |
+| [209. 长度最小的子数组](https://leetcode-cn.com/problems/minimum-size-subarray-sum/) | Medium | https://leetcode-cn.com/problems/minimum-size-subarray-sum/  |
+|                                                              |        |                                                              |
+| [239. 滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/) | Hard   | https://leetcode-cn.com/problems/sliding-window-maximum/     |
+|                                                              |        |                                                              |
+| [713. 乘积小于K的子数组](https://leetcode-cn.com/problems/subarray-product-less-than-k/) | Medium | https://leetcode-cn.com/problems/subarray-product-less-than-k/ |
+| [567. 字符串的排列](https://leetcode-cn.com/problems/permutation-in-string/) | Medium | https://leetcode-cn.com/problems/permutation-in-string/      |
+|                                                              |        |                                                              |
+| [76. 最小覆盖子串](https://leetcode-cn.com/problems/minimum-window-substring/) | Hard   | https://leetcode-cn.com/problems/minimum-window-substring/   |
+| [220. 存在重复元素 III](https://leetcode-cn.com/problems/contains-duplicate-iii/) | Medium | https://leetcode-cn.com/problems/contains-duplicate-iii/     |
+|                                                              |        |                                                              |
 
 
 
