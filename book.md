@@ -234,15 +234,6 @@ while j<n:
 | [643. 子数组最大平均数 I](https://leetcode-cn.com/problems/maximum-average-subarray-i/) | Easy   | https://leetcode-cn.com/problems/maximum-average-subarray-i/ |
 | [3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) | Medium | https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/ |
 | [209. 长度最小的子数组](https://leetcode-cn.com/problems/minimum-size-subarray-sum/) | Medium | https://leetcode-cn.com/problems/minimum-size-subarray-sum/  |
-|                                                              |        |                                                              |
-| [239. 滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/) | Hard   | https://leetcode-cn.com/problems/sliding-window-maximum/     |
-|                                                              |        |                                                              |
-| [713. 乘积小于K的子数组](https://leetcode-cn.com/problems/subarray-product-less-than-k/) | Medium | https://leetcode-cn.com/problems/subarray-product-less-than-k/ |
-| [567. 字符串的排列](https://leetcode-cn.com/problems/permutation-in-string/) | Medium | https://leetcode-cn.com/problems/permutation-in-string/      |
-|                                                              |        |                                                              |
-| [76. 最小覆盖子串](https://leetcode-cn.com/problems/minimum-window-substring/) | Hard   | https://leetcode-cn.com/problems/minimum-window-substring/   |
-| [220. 存在重复元素 III](https://leetcode-cn.com/problems/contains-duplicate-iii/) | Medium | https://leetcode-cn.com/problems/contains-duplicate-iii/     |
-|                                                              |        |                                                              |
 
 
 
@@ -250,8 +241,99 @@ while j<n:
 ### 备忘录
 ### 剪枝
 ### 博弈论
-## 动态规划
+
 ### 状态压缩
+
+从数组里不放回的取出元素遍历，如何表示数组的当前状态state？
+
+假设数组长度为n，并且n<32，可以用一个2**(n)大小的整数state来表示表示数组的状态。
+
+state的第i位为0时代表数组的第i位元素未被使用，为1时代表已被使用。
+
+这样的好处是，state是数字，很方便存储，而且可被哈希,可以用哈希表优化dfs速度。
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [526. 优美的排列](https://leetcode-cn.com/problems/beautiful-arrangement/) | Medium | https://leetcode-cn.com/problems/beautiful-arrangement/      |
+| [698. 划分为k个相等的子集](https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/) | Medium | https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/ |
+|                                                              |        |                                                              |
+
+#### [526. 优美的排列](https://leetcode-cn.com/problems/beautiful-arrangement/)
+
+```python
+class Solution:
+    def countArrangement(self, n: int) -> int:
+        m = {}
+        def dfs(state, path):
+            """
+            # state: 用来记录n个整数的使用情况
+            # path: 当前排列
+            """
+            if len(path)==n:
+                return 1 
+            if state in m:
+                return m[state]
+
+            res = 0
+            for i in range(1, n+1):
+                cur = 1<<(i-1) 
+                if cur & state!=0: # 当前数字已被使用
+                    continue
+
+                cur_length = len(path) + 1
+                if cur_length%i ==0 or i%cur_length==0: # 题目要求                    
+                    res+= dfs(state|cur, path+[i], m) # state|cur是将对应位数置为1
+            m[state] = res
+            return res
+        
+        res = dfs(0, [], m)
+        return res 
+```
+
+#### [698. 划分为k个相等的子集](https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/)
+
+```python
+class Solution:
+    def canPartitionKSubsets(self, nums: List[int], k: int) -> bool:
+        sum_nums = sum(nums)
+        if sum_nums%k!=0 or len(nums)<k:
+            return False
+        
+        length = int(sum_nums/k)
+        if max(nums)>length:
+            return False
+        
+        m = {}
+        def dfs(state, cur_length, length, num_left, m):
+            '''
+            # state: 2*n，state的第i位为1代表nums的第i个数被用过
+            # cur_length: 当前的长度
+            # length: 每个子集的总和
+            # num_left：还剩下多少个子集
+            '''
+            if cur_length > length:
+                return False
+            if cur_length == length:
+                return dfs(state, 0, length, num_left-1, m)
+            if num_left==0 and state == (1<<len(nums)) - 1:
+                return True
+            
+            if state in m:
+                return m[state]
+            for i in range(len(nums)):
+                cur = 1<<i
+                if cur & state != 0:
+                    continue
+                if dfs(cur|state, cur_length+nums[i], length, num_left, m):
+                    return True
+            
+            m[state] = False
+            return False
+        
+        return dfs(0, 0, length, k, m)
+```
+
+## 动态规划
 ## 排序
 ### 堆排
 
@@ -318,12 +400,108 @@ def quick(arr, start, end):
 
 ## 位运算
 
+a ^ b 可以看作 a 和 b 的无进位加法
+
+(a & b)<<1 可以看作a+b的进位
+a^a = 0
+a|(1<<i) ，将第i为置为1
+
+a & (1<<i) ==0，a的第i位是否为1
+
+a & b == 0 ，a和b是否正交
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [191. 位1的个数](https://leetcode-cn.com/problems/number-of-1-bits/) | Easy   | https://leetcode-cn.com/problems/number-of-1-bits/           |
+| [260. 只出现一次的数字 III](https://leetcode-cn.com/problems/single-number-iii/) | Medium | https://leetcode-cn.com/problems/single-number-iii/          |
+| [剑指 Offer 65. 不用加减乘除做加法](https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/) | Medium | https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/ |
+| [29. 两数相除](https://leetcode-cn.com/problems/divide-two-integers/) | Medium | https://leetcode-cn.com/problems/divide-two-integers/        |
+
+#### [191. 位1的个数](https://leetcode-cn.com/problems/number-of-1-bits/)
+
+```python
+class Solution(object):
+    def hammingWeight(self, n):
+        ret = sum(1 for i in range(32) if n & (1 << i))
+        return ret      
+```
+
+#### [260. 只出现一次的数字 III](https://leetcode-cn.com/problems/single-number-iii/)
+
+```python
+class Solution(object):
+    def singleNumber(self, nums):
+        # 两个相同的数做异或必定为0
+        xorsum = 0
+        for num in nums:
+            xorsum ^= num
+            
+        # l为xorsum最右边为1的位
+        # 比如xorsum = 1100，l为0100
+        l = xorsum & (-1*xorsum)
+
+        type1, type2 = 0, 0
+        for num in nums:
+            # 两个只出现一次的数在l位上必定一个为0一个为1，所以可以借此把这两个数区分开
+            # 而那些出现两次的数在做完异或后必定为0，所以不用管
+            if num&l: 
+                type1 ^= num
+            else:
+                type2 ^= num
+        return [type1, type2]
+```
+
+#### [剑指 Offer 65. 不用加减乘除做加法](https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/)
+
+```python
+class Solution:
+    def add(self, a: int, b: int) -> int:
+        x = 0xffffffff
+        a, b = a&x, b&x
+        while b:
+            # 分别做无进位加法以及进位，每次的计算之后，a1+b1 = a2+b2，但是a越来越大，b越来越小，直到b为0，此时的a = a + b      
+            a, b = a^b, ((a&b)<<1)&x 
+        return a if a<=0x7fffffff else ~(a^x)
+```
+
+#### [29. 两数相除](https://leetcode-cn.com/problems/divide-two-integers/)
+
+```python
+class Solution(object):
+    def divide(self, a, b):
+        if a==-2**31 and b==-1:
+            return (1<<31) - 1
+        # 思路
+        ## 找到最大的一个i，满足 (b<<i) < a
+        ## 递归计算 divide(a-(b<<i), b)
+        flag = True if (a<0 and b<0) or (a>0 and b>0) else False
+
+        def dfs(a, b):
+            # 默认a,b>0
+            if a<b:
+                return 0
+            i=0
+            while a>(b<<(i+1)):
+                i+=1
+
+            return (1<<i) + dfs(a-(b<<i), b)
+        
+        res = dfs(abs(a), abs(b))
+        return res if flag else -1*res
+```
+
+
+
 # 特定类型题
 ## 组合/排列
 ## 子序列
 ## 字符串匹配
 
 ## 二叉树路径和
+
+## 模拟题
+
+
 
 
 # 脑筋急转弯题
