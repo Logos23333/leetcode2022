@@ -10,14 +10,27 @@
 | --- | --- | --- |
 | [1. 两数之和](https://leetcode-cn.com/problems/two-sum/) | Easy | https://leetcode-cn.com/problems/two-sum/ |
 
+#### [1. 两数之和](https://leetcode-cn.com/problems/two-sum/)
+
+```python
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        mapping = {}
+        for idx, num in enumerate(nums):
+            if target-num in mapping:
+                return [mapping[target-num], idx]
+            mapping[num] = idx
+```
+
 ### 前缀和
+
 前缀和通常被用于“连续子序列之和/积”类型的题目中，它计算序列的前k个数之和并用哈希表存储。
 它的思想是，任意连续子数组nums[i:j]之和都可以用total[j]-total[i]表示。
-假设数组为nums，长度为n，我们想知道该数组存不存在和为target的“连续子数组”，用前缀和的伪代码如下：
+假设数组为nums，长度为n，我们想知道该数组存不存在和为target的“连续子数组”，用前缀和的模板如下：
 
 ```python
 m = {0:-1} # 哈希表初始化
-total = 0 # 保存前缀和
+total = 0 # 当前前缀和
 for idx, num in enumerate(nums):
     total += num
     if target-total in m:
@@ -136,7 +149,6 @@ class Solution(object):
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
 | [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/) | Easy   | https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/ |
 | [142. 环形链表 II](https://leetcode-cn.com/problems/linked-list-cycle-ii/) | Medium | https://leetcode-cn.com/problems/linked-list-cycle-ii/       |
-|                                                              |        |                                                              |
 
 ## 二叉树
 
@@ -147,6 +159,219 @@ class Solution(object):
 ###  二叉搜索树
 
 二叉搜索树的性质是左节点值小于根节点，右节点值大于根节点。
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/) | Medium | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/ |
+|                                                              |        |                                                              |
+|                                                              |        |                                                              |
+
+#### [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/)
+
+```python
+class Solution:
+    def verifyPostorder(self, postorder: List[int]) -> bool:
+        n = len(postorder)
+        if n<3:
+            return True
+        root = postorder[-1]
+        # 找到第一个比root大的值，此值左边为左子树，右边为右子树，递归判断即可
+        idx = 0
+        right_idx = -1
+        while idx<n-1:
+            if right_idx!=-1: # 此时已经找到第一个比root大的值
+                if postorder[idx]<root: # 它右边还是有比root小的，必定不满足二叉搜索树
+                    return False
+            if postorder[idx]>root:
+                right_idx = idx
+                break
+            idx+=1
+        return self.verifyPostorder(postorder[:idx]) and self.verifyPostorder(postorder[idx:-1])
+```
+
+
+
+### 遍历二叉树
+
+需要熟练掌握二叉树的前序，中序，后序，层次遍历
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [105. 从前序与中序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/) | Medium | https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/ |
+| [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/) | Easy   | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/ |
+| [剑指 Offer 32 - II. 从上到下打印二叉树 II](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/) | Easy   | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/ |
+| [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) | Medium | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/ |
+
+#### [105. 从前序与中序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+```python
+class Solution(object):
+    def buildTree(self, preorder, inorder):
+        if len(preorder) == 0:
+            return None
+        root = preorder[0]
+        left_length = inorder.index(root)
+        root_node = TreeNode(root)
+        root_node.left = self.buildTree(preorder[1:1+left_length], inorder[:left_length])
+        root_node.right = self.buildTree(preorder[1+left_length:], inorder[left_length+1:])
+        return root_node
+```
+
+#### [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)
+
+```python
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[int]:
+        if not root:
+            return []
+        queue = deque([root]) # 双向队列deque popleft的时间复杂度为O(1)，数组pop(0)的时间复杂度为O(n)
+        res = []
+        while queue:
+            cur = queue.popleft()
+            res.append(cur.val)
+            if cur.left:
+                queue.append(cur.left)
+            if cur.right:
+                queue.append(cur.right)
+        return res
+```
+
+#### [剑指 Offer 32 - II. 从上到下打印二叉树 II](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/)
+
+```python
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[List[int]]:
+        if not root:
+            return []
+        queue = deque([root])
+        res = []
+        while queue:
+            tmp = []
+            queue_len = len(queue)
+            for i in range(queue_len):
+                cur = queue.popleft()
+                tmp.append(cur.val)
+                if cur.left:
+                    queue.append(cur.left)
+                if cur.right:
+                    queue.append(cur.right)
+            res.append(tmp)
+        return res
+```
+
+#### [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/)
+
+```python
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[List[int]]:
+        if not root:
+            return []
+        queue = deque([root])
+        res = []
+        while queue:
+            tmp = []
+            queue_len = len(queue)
+            for i in range(queue_len):
+                cur = queue.popleft()
+                tmp.append(cur.val)
+                if cur.left:
+                    queue.append(cur.left)
+                if cur.right:
+                    queue.append(cur.right)
+            res.append(tmp[::-1])
+        return res
+```
+
+### 路径总和题
+
+| 题目 | 难度 | 链接 |
+| ---- | ---- | ---- |
+|      |      |      |
+|      |      |      |
+|      |      |      |
+
+
+
+### 其它题
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/) | Medium | https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/     |
+| [剑指 Offer 27. 二叉树的镜像](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/) | Easy   | https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/ |
+| [剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/) | Easy   | https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/ |
+|                                                              |        |                                                              |
+
+#### [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
+
+ 注意这题，B是A的子树和B是A的子结构是不一样的，具体区别是：子树要求一定要到达叶节点，而子结构不一定。
+
+用递归的时候一定要先弄清楚，函数的具体含义和返回值，比如这里的`isSubStructure`是判断B是否为A的子结构（B可以出现在A的子树中），`isSub`则一定要“以B节点为root节点”的树 是 “以A节点为root节点”的树的子结构。
+
+```python
+class Solution(object):
+    def isSubStructure(self, A, B):
+       
+        if not B or not A:
+            return False
+        
+        def isSub(A, B):
+            if not B:
+                return True
+            if not A:
+                return False
+            if A.val != B.val:
+                return False
+            else:
+                return isSub(A.left, B.left) and isSub(A.right, B.right)
+        
+        if isSub(A, B):
+            return True
+        
+        return self.isSubStructure(A.left, B) or self.isSubStructure(A.right, B) 
+```
+
+#### [剑指 Offer 27. 二叉树的镜像](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/)
+
+```python
+class Solution:
+    def mirrorTree(self, root: TreeNode) -> TreeNode:
+        if not root:
+            return None
+        if not root.left and not root.right:
+            return root
+
+        left = root.left
+        right = root.right
+        root.left = self.mirrorTree(right)
+        root.right = self.mirrorTree(left)
+
+        return root
+```
+
+[剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/)
+
+一棵树对称的充分必要条件是，它的左子树和右子树互为镜像。
+
+```python
+class Solution:
+    def isSymmetric(self, root: TreeNode) -> bool:
+        if not root:
+            return True
+        def isMirror(A, B):
+            if not A and not B:
+                return True
+            if not A or not B:
+                return False
+            
+            if A.val == B.val:
+                return isMirror(A.left, B.right) and isMirror(A.right, B.left)
+            return False
+        
+        return isMirror(root.left, root.right)
+
+```
+
+
 
 ## 队列
 ## 栈
