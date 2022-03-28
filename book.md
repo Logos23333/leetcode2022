@@ -22,6 +22,10 @@ class Solution:
             mapping[num] = idx
 ```
 
+时间复杂度：`O(n)`
+
+空间复杂度：`O(n)`
+
 ### 前缀和
 
 前缀和通常被用于“连续子序列之和/积”类型的题目中，它计算序列的前k个数之和并用哈希表存储。
@@ -47,6 +51,8 @@ for idx, num in enumerate(nums):
 | [525. 连续数组](https://leetcode-cn.com/problems/contiguous-array/) | Medium | https://leetcode-cn.com/problems/contiguous-array/ |
 #### [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/)
 
+思路：任意连续子数组nums[i:j]之和都可以用total[j]-total[i]表示。
+
 ```python
 class Solution(object):
     def subarraySum(self, nums, k):
@@ -61,7 +67,13 @@ class Solution(object):
         return res
 ```
 
+时间复杂度：`O(n)`
+
+空间复杂度：`O(n)`
+
 #### [1248. 统计「优美子数组」](https://leetcode-cn.com/problems/count-number-of-nice-subarrays/)
+
+思路：哈希表`(i, number)`记录有`i`个奇数数字的数组个数为`number`。应用了前缀和后，这道题就变成了[1. 两数之和](https://leetcode-cn.com/problems/two-sum/)。
 
 ```python
 class Solution(object):
@@ -78,7 +90,13 @@ class Solution(object):
         return res
 ```
 
+时间复杂度：`O(n)`
+
+空间复杂度：`O(n)`
+
 #### [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)
+
+思路：任意路径之和都可以用前缀和之差表示。
 
 ```python
 class Solution:
@@ -89,11 +107,11 @@ class Solution:
             if not root:
                 return 0
             
-            cur+=root.val # 更新前缀和
+            cur+=root.val # 当前前缀和
             res = prefix.get(cur-targetSum, 0) # 查询当前是否有满足题意的路径
+            prefix[cur] = prefix.get(cur, 0) + 1 # 更新哈希表
 
             # dfs搜索
-            prefix[cur] = prefix.get(cur, 0) + 1
             res += dfs(root.left, cur)
             res += dfs(root.right, cur)
             prefix[cur] -= 1
@@ -103,20 +121,28 @@ class Solution:
         return dfs(root, 0)
 ```
 
-#### 525. 连续数组
+时间复杂度：`O(n)`。每个节点都需要访问一次。
+
+空间复杂度：`O(n)`
+
+#### [525. 连续数组](https://leetcode-cn.com/problems/contiguous-array/)
+
+思路：total[i]表示列表`[:i+1]`中0和1的数量。若total[j]和total[i]的值一样，则代表`nums[i+1:j+1]`0和1的数量相同（互相抵消）。
+
+哈希表记录的是total对应的索引`index`，要注意哈希表的初始化，记录索引的时候要初始化为`-1`。
 
 ```python
 class Solution(object):
     def findMaxLength(self, nums):
-        pre_dict = {0: -1}
-        ret = pre_sum = 0
+        m = {0: -1}
+        res, total = 0, 0
         for index, num in enumerate(nums):
-            pre_sum += -1 if num == 0 else 1
-            if pre_sum in pre_dict:
-                ret = max(ret, index - pre_dict[pre_sum])
+            total += -1 if num == 0 else 1
+            if total in m:
+                res = max(res, index - m[total])
             else:
-                pre_dict[pre_sum] = index
-        return ret
+                m[total] = index
+        return res
 ```
 
 ## 链表
@@ -158,13 +184,38 @@ class Solution(object):
 
 ###  二叉搜索树
 
-二叉搜索树的性质是左节点值小于根节点，右节点值大于根节点。
+二叉搜索树的性质是左节点值小于父节点，右节点值大于父节点。
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/) | Easy   | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/ |
 | [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/) | Medium | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/ |
+| [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/) | Medium | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/ |
 |                                                              |        |                                                              |
-|                                                              |        |                                                              |
+
+#### [剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)
+
+```python
+class Solution(object):
+    def kthLargest(self, root, k):
+        def dfs(root):
+            if not root:
+                return
+            dfs(root.right) # 注意这里是先右再左，因为是返回第k大而不是第k小
+            self.k-=1
+            if self.k==0: self.res = root.val
+            dfs(root.left)
+        
+        self.res = 0
+        self.k = k
+        dfs(root)
+        return self.res
+            
+```
+
+时间复杂度：`O(n)`。
+
+空间复杂度：`O(n)`。
 
 #### [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/)
 
@@ -189,7 +240,88 @@ class Solution:
         return self.verifyPostorder(postorder[:idx]) and self.verifyPostorder(postorder[idx:-1])
 ```
 
+时间复杂度：`O(n^2)`。每次都要遍历整个数组，最坏的情况下要遍历n次。
 
+空间复杂度：`O(n)`。压栈也会占用空间。
+
+#### [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/)
+
+首先需要知道一点：二叉搜索树中序遍历后可以得到一个排序数组。
+
+这题有两种解法，一是用一个全局指针保存上一个递归的尾节点，二是dfs时同时返回头节点和尾节点。
+
+解法1：
+
+用全局指针`self.pre`保存上一次递归的尾节点。
+
+```python
+class Solution:
+    def treeToDoublyList(self, root: 'Node') -> 'Node':
+        def dfs(cur):
+            if not cur: return
+            dfs(cur.left) # 递归左子树
+            if self.pre: # 修改节点引用
+                self.pre.right, cur.left = cur, self.pre
+            else: # 记录头节点
+                self.head = cur
+            self.pre = cur # 保存 cur
+            dfs(cur.right) # 递归右子树
+        
+        if not root: return
+        self.pre = None
+        dfs(root)
+        self.head.left, self.pre.right = self.pre, self.head
+        return self.head
+
+作者：jyd
+链接：https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/solution/mian-shi-ti-36-er-cha-sou-suo-shu-yu-shuang-xian-5/
+```
+
+时间复杂度：`O(n)`，每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
+
+解法2：
+
+dfs时同时返回头节点和尾节点。
+
+```python
+class Solution(object):
+    def treeToDoublyList(self, root):
+        if not root:
+            return None
+        
+        def dfs(root):
+            # 返回值, (head, tail)
+            if not root:
+                return None, None
+            if not root.left and not root.right: # 叶节点
+                return root, root
+
+            left_head, left_tail = dfs(root.left) # 递归得到左子树的头节点和尾节点
+            right_head, right_tail = dfs(root.right) # 递归得到右子树的头节点和尾节点
+            
+            # 构建双向链表
+            if right_head:
+                right_head.left = root
+            if left_tail:
+                left_tail.right = root
+            root.left = left_tail
+            root.right = right_head
+            
+            head = left_head if left_head else root
+            tail = right_tail if right_tail else root
+            return head, tail
+        
+        head, tail = dfs(root)
+        head.left = tail
+        tail.right = head
+        return head
+```
+
+时间复杂度：`O(n)`，每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
 
 ### 遍历二叉树
 
@@ -201,8 +333,11 @@ class Solution:
 | [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/) | Easy   | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/ |
 | [剑指 Offer 32 - II. 从上到下打印二叉树 II](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/) | Easy   | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/ |
 | [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) | Medium | https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/ |
+| [剑指 Offer 37. 序列化二叉树](https://leetcode-cn.com/problems/xu-lie-hua-er-cha-shu-lcof/) |        |                                                              |
 
 #### [105. 从前序与中序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+思路：前序遍历root节点必定是第一个，以此找到中序遍历数组中的root节点，并划分左右子树，递归调用即可。
 
 ```python
 class Solution(object):
@@ -210,12 +345,16 @@ class Solution(object):
         if len(preorder) == 0:
             return None
         root = preorder[0]
-        left_length = inorder.index(root)
+        left_length = inorder.index(root) # 左子树长度，这里可以先用哈希表存储每个节点对应的索引，用空间换时间。
         root_node = TreeNode(root)
         root_node.left = self.buildTree(preorder[1:1+left_length], inorder[:left_length])
         root_node.right = self.buildTree(preorder[1+left_length:], inorder[left_length+1:])
         return root_node
 ```
+
+时间复杂度：`O(n^2)`。n为树中节点的个数。如果使用哈希表，则时间复杂度为`O(n)`。
+
+空间复杂度：`O(h)`。h为树的高度。如果使用哈希表，空间复杂度为`O(n)`。
 
 #### [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)
 
@@ -235,6 +374,10 @@ class Solution:
                 queue.append(cur.right)
         return res
 ```
+
+时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+
+空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
 
 #### [剑指 Offer 32 - II. 从上到下打印二叉树 II](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/)
 
@@ -259,6 +402,10 @@ class Solution:
         return res
 ```
 
+时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+
+空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+
 #### [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/)
 
 ```python
@@ -282,24 +429,302 @@ class Solution:
         return res
 ```
 
+时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。倒序操作的时间复杂度也为`O(n)`，因为每个节点都只需要倒一次。
+
+空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+
+#### [剑指 Offer 37. 序列化二叉树](https://leetcode-cn.com/problems/xu-lie-hua-er-cha-shu-lcof/)
+
+```python
+class Codec:
+    def serialize(self, root):
+        # 层次化遍历二叉树
+        if not root:
+            return []
+        queue = deque([root]) 
+        res = []
+        while queue:
+            cur = queue.popleft()
+            if cur:
+                res.append(str(cur.val))
+            else:
+                res.append('None')
+                continue
+
+            queue.append(cur.left)
+            queue.append(cur.right)
+
+        return ','.join(res).rstrip(',None')
+
+    def deserialize(self, data):
+        if not data:
+            return None
+        nodes = data.split(',')
+        root = TreeNode(int(nodes[0]))
+        queue = deque([root])
+        i = 1
+        # 每次popleft出一个，i走两步，保证第一步为左节点，第二步为右节点
+        while queue and i<len(nodes):
+            cur = queue.popleft()
+            if nodes[i]!='None':
+                cur.left = TreeNode(int(nodes[i]))
+                queue.append(cur.left)
+            i+=1
+            if i>=len(nodes): break
+            if nodes[i]!='None':
+                cur.right = TreeNode(int(nodes[i]))
+                queue.append(cur.right)
+            i+=1
+        return root
+```
+
+时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+
+空间复杂度：`O(n)`。
+
 ### 路径总和题
 
-| 题目 | 难度 | 链接 |
-| ---- | ---- | ---- |
-|      |      |      |
-|      |      |      |
-|      |      |      |
+同样都是找出路径和等于`target`，但是当路径的定义发生变化，解法也随之发生变化。
+
+考虑以下四种路径定义：
+
+1. 路径只能由根节点出发，叶节点结束。（[112. 路径总和](https://leetcode-cn.com/problems/path-sum/)，[113. 路径总和 II](https://leetcode-cn.com/problems/path-sum-ii/)）
+2. 路径由根节点出发，任意节点都能结束，但只能由父节点到子节点。
+3. 路径不需要从根节点出发，也不需要在叶子节点结束，但只能由父节点到子节点。（[437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)）
+4. 路径不需要从根节点出发，也不需要在叶子节点结束，可以从子节点到父节点，但是同一节点只能出现一次。（[剑指 Offer II 051. 节点之和最大的路径](https://leetcode-cn.com/problems/jC7MId/))
+
+| 题目                                                         | 难度   | 链接                                           |
+| ------------------------------------------------------------ | ------ | ---------------------------------------------- |
+| [112. 路径总和](https://leetcode-cn.com/problems/path-sum/)  | Easy   | https://leetcode-cn.com/problems/path-sum/     |
+| [113. 路径总和 II](https://leetcode-cn.com/problems/path-sum-ii/) | Medium | https://leetcode-cn.com/problems/path-sum-ii/  |
+| [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/) | Medium | https://leetcode-cn.com/problems/path-sum-iii/ |
+| [剑指 Offer II 051. 节点之和最大的路径](https://leetcode-cn.com/problems/jC7MId/) | Hard   | https://leetcode-cn.com/problems/jC7MId/       |
+
+#### [112. 路径总和](https://leetcode-cn.com/problems/path-sum/)
+
+```python
+class Solution:
+    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:
+        if not root:
+            return False
+
+        def dfs(root, target):
+            
+            if not root.left and not root.right:
+                return target==root.val
+            if root.left:
+                if dfs(root.left, target-root.val):
+                    return True
+            if root.right:
+                if dfs(root.right, target-root.val):
+                    return True 
+            return False
+        
+        return dfs(root, targetSum)
+```
+
+时间复杂度：`O(n)`，每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
+
+#### [113. 路径总和 II](https://leetcode-cn.com/problems/path-sum-ii/)
+
+```python
+class Solution:
+    def pathSum(self, root: Optional[TreeNode], targetSum: int) -> List[List[int]]:
+        if not root:
+            return []
+        
+        self.res = []
+        def dfs(root, path, cur_sum):
+            if not root:
+                return
+            if not root.left and not root.right:
+                if cur_sum + root.val == targetSum:
+                    path.append(root.val)
+                    self.res.append(path)
+                return
+            
+            if root.left:
+                dfs(root.left, path+[root.val], cur_sum+root.val)
+            if root.right:
+                dfs(root.right, path+[root.val], cur_sum+root.val)
+        
+        dfs(root, [], 0)
+        return self.res
+```
+
+时间复杂度：`O(n^2)`，其中n是树的节点数。在最坏情况下，树的上半部分为链状，下半部分为完全二叉树，此时，路径的数目为 `O(n)`，并且每一条路径的节点个数也为 `O(n)`，因此要将这些路径全部添加进答案中，时间复杂度为 `O(n^2)`。
+
+空间复杂度：`O(h)`，h为二叉树的高度。
+
+#### [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)
+
+思路：任意路径之和都可以用前缀和之差表示。
+
+```python
+class Solution:
+    def pathSum(self, root: TreeNode, targetSum: int) -> int:
+        prefix = {0:1}
+
+        def dfs(root, cur):
+            if not root:
+                return 0
+            
+            cur+=root.val # 当前前缀和
+            res = prefix.get(cur-targetSum, 0) # 查询当前是否有满足题意的路径
+            prefix[cur] = prefix.get(cur, 0) + 1 # 更新哈希表
+
+            # dfs搜索
+            res += dfs(root.left, cur)
+            res += dfs(root.right, cur)
+            prefix[cur] -= 1
+
+            return res
+        
+        return dfs(root, 0)
+```
+
+时间复杂度：`O(n)`。每个节点都需要访问一次。
+
+空间复杂度：`O(n)`
+
+#### [剑指 Offer II 051. 节点之和最大的路径](https://leetcode-cn.com/problems/jC7MId/)
+
+注意这里的dfs，返回值是以root节点为顶点的单边路径最大和，它和题目要求的路径和是不一样的。我们之所以要返回前者，是因为对于父节点来说，它只需要前者，所以我们在返回前者的同时，更新全局变量res。
+
+做完这题可以去做做[剑指 Offer 68 - II. 二叉树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
+
+```python
+class Solution:
+    def maxPathSum(self, root: TreeNode) -> int:    
+        self.res = float('-inf')
+        # dfs: 搜索以root节点为顶点的最大路径和
+        def dfs(root):
+            if not root:
+                return 0
+            
+            if not root.left and not root.right:
+                self.res = max(self.res, root.val)
+                return root.val
+            
+            # 如果为负数的话还不如不要
+            left = max(dfs(root.left), 0)
+            right = max(dfs(root.right), 0)
+
+            cur_max = left + right + root.val # 题目要求的路径和为 左边单边最大和+根节点+右边单边最大和
+            self.res = max(self.res, cur_max) # 更新全局变量res
+
+            return max(left+root.val, right+root.val) # 返回值：以root节点为顶点的单边最大路径和   
+            
+        dfs(root)
+        return self.res
 
 
+```
+
+时间复杂度：`O(n)`。每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，h为二叉树的高度。
 
 ### 其它题
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [剑指 Offer 55 - I. 二叉树的深度](https://leetcode-cn.com/problems/er-cha-shu-de-shen-du-lcof/) | Easy   | https://leetcode-cn.com/problems/er-cha-shu-de-shen-du-lcof/ |
+| [剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/) | Easy   | https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/  |
 | [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/) | Medium | https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/     |
 | [剑指 Offer 27. 二叉树的镜像](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/) | Easy   | https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/ |
 | [剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/) | Easy   | https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/ |
-|                                                              |        |                                                              |
+| [剑指 Offer 68 - I. 二叉搜索树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/) | Easy   | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/submissions/ |
+| [剑指 Offer 68 - II. 二叉树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/) | Medium | https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/ |
+
+#### [剑指 Offer 55 - I. 二叉树的深度](https://leetcode-cn.com/problems/er-cha-shu-de-shen-du-lcof/)
+
+二叉树的深度等于左子树和右子树深度最大值+1。
+
+```python
+class Solution(object):
+    def maxDepth(self, root):
+        def dfs(root):
+            if not root:
+                return 0
+            return max(dfs(root.left), dfs(root.right)) + 1
+        
+        return dfs(root)
+```
+
+#### [剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)
+
+分析题不难知道该二叉树平衡的充分必要条件是，左子树是平衡二叉树，右子树是平衡二叉树，且左子树右子树深度之差小于2。
+
+可以写出以下代码：
+
+```python
+def isBalanced(root):
+    def depth(root):
+        if not root:
+            return 0
+        return max(dfs(root.left), dfs(root.right)) + 1
+    left = depth(root.left)
+    right = depth(root.right)
+    if abs(left-right)<2 and isBalanced(root.left) and isBalanced(root.right):
+        return True
+   	return False
+```
+
+这时我们会发现一个问题，我们在计算根节点的左右子树深度时，其实就已经知道了左子树的子树的深度，但是我们并没有利用到这一信息，换言之，上面代码进行了重复搜索。
+
+优化1：
+
+用一个全局变量res存放子树是否为平衡二叉树，这样就不用重复搜索了
+
+```python
+class Solution:
+    def isBalanced(self, root: TreeNode) -> bool:
+        if not root:
+            return True
+        def depth(root):
+            if not root:
+                return 0
+            left = depth(root.left)
+            right = depth(root.right)
+            if abs(left-right)>1:
+                self.res = False
+            return max(left, right) + 1
+
+        self.res = True
+        left_depth = depth(root.left)
+        right_depth = depth(root.right)
+        return True if self.res and abs(left_depth-right_depth)<=1 else False
+```
+
+优化2：
+
+用-1返回值标识不平衡的情况。
+
+```python
+class Solution(object):
+    def isBalanced(self, root):
+        if not root:
+            return True
+        
+        def depth(root):
+            if not root:
+                return 0
+            
+            left = depth(root.left)
+            right = depth(root.right)
+            if left==-1 or right==-1 or abs(left-right)>1:
+                return -1
+            else:
+                return max(left, right)+1
+        
+        return depth(root)>=0
+
+```
+
+
 
 #### [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
 
@@ -330,6 +755,10 @@ class Solution(object):
         return self.isSubStructure(A.left, B) or self.isSubStructure(A.right, B) 
 ```
 
+时间复杂度：`O(m*n)`，其中m为A的节点数量，n为B的节点数量，最坏情况下，对于A的每个节点，都要进行n次比较。
+
+空间复杂度：`O(m)`，栈的深度，最坏情况下为m。
+
 #### [剑指 Offer 27. 二叉树的镜像](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/)
 
 ```python
@@ -347,6 +776,10 @@ class Solution:
 
         return root
 ```
+
+时间复杂度：`O(n)`。每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，h为二叉树的高度。
 
 [剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/)
 
@@ -368,6 +801,56 @@ class Solution:
             return False
         
         return isMirror(root.left, root.right)
+
+```
+
+时间复杂度：`O(n)`。最坏情况下，左子树的每个节点都需要和右子树的每个节点比较一次，也即比较`n/2`次。
+
+空间复杂度：`O(h)`，h为二叉树的高度。
+
+#### [剑指 Offer 68 - I. 二叉搜索树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
+
+注意这题是二叉搜索树，可以利用二叉搜索树的性质求解，如果p,q在root的左右两边，那么直接返回root即可。
+
+```python
+class Solution:
+    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        def dfs(root, p, q):
+            if root.val==p.val or root.val==q.val or (root.val>p.val and root.val<q.val):
+                return root
+            
+            # p<q
+            if q.val<root.val:
+                return dfs(root.left, p, q)
+            if root.val<p.val:
+                return dfs(root.right, p, q)
+
+        return dfs(root, p, q) if p.val<q.val else dfs(root, q, p)
+```
+
+#### [剑指 Offer 68 - II. 二叉树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
+
+这题的dfs其实挺巧妙的，值得回顾。
+
+这个dfs，如果是还没有递归判断（也就是第一行），出现了root==p or root==q，那么root也就是最近公共祖先。
+但是如果p,q各自在左右子树时，这时的dfs返回值其实不是最近公共祖先，而是p或q，并不是严格意义上的dfs，只是可以巧妙的判断，如果left 和right同时存在的话，即p,q分居root左右，那么此时应该返回root。
+
+如果p, q在同一边，这时候才是严格意义上的dfs，也即返回了子树的最近公共祖先。
+
+```python
+class Solution:
+    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+        if not root or root==p or root==q:
+            return root
+        left =self.lowestCommonAncestor(root.left, p, q)
+        right = self.lowestCommonAncestor(root.right, p, q)
+        if not left and not right:
+            return None
+        if left and not right:
+            return left
+        if right and not left:
+            return right
+        return root 
 
 ```
 
