@@ -699,6 +699,10 @@ class Solution:
         return True if self.res and abs(left_depth-right_depth)<=1 else False
 ```
 
+时间复杂度：`O(n)`。每个节点都需要访问一次。
+
+空间复杂度：`O(h)`，h为二叉树的高度。
+
 优化2：
 
 用-1返回值标识不平衡的情况。
@@ -724,7 +728,9 @@ class Solution(object):
 
 ```
 
+时间复杂度：`O(n)`。每个节点都需要访问一次。
 
+空间复杂度：`O(h)`，h为二叉树的高度。
 
 #### [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
 
