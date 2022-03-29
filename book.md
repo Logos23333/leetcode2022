@@ -877,27 +877,54 @@ class Solution:
 二分搜索模板：
 
 ```python
-def search(arr, k):
-    n = len(arr)
-    i, j = 0, n - 1
+def binarySearch(arr, target):
+    i, j = 0, len(arr)
     while i<j:
-        m = i + (j - i)//2
-        if arr[m]>k:
-            j = m-1
-        elif arr[m]<k:
+        m = i + (j-i)//2
+        if arr[m]<target:
             i = m+1
         else:
-            return m
-    return -1
+            j = m
+    return i
 ```
 
+有几点需要注意：
 
+1. 上面的二分搜索是`左闭右开`，即搜索[i, j)，i,j分别初始化为0和数组长度。
+2. 计算middle时，python虽然不会整数溢出，但也要保证长度为1时，left和right的middle落在[left, right)区间。
+3. 若数组有target，上面的二分搜索返回的是`大于等于target的下界`，比如`[1,2,2,3], 2`返回的是`1`。如果不存在target，返回的是`大于target的下界`，比如`[1,2,2,4], 3`返回的是`3`（即数字4）。
+4. 如果需要找`等于target的上界`，即最后一个target，只需要`binarySearch(arr, target+1)-1`即可。比如`[1,2,2,4], 2`，我们想找到最后一个2，应该这么调用 `ans = binarySearch([1,2,2,4], 2+1) - 1`。最后返回的是`2`。
 
-| 题目                                                         | 难度 | 链接                                                         |
-| ------------------------------------------------------------ | ---- | ------------------------------------------------------------ |
-| [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Easy | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
-| [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
-|                                                              |      |                                                              |
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Easy   | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
+| [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy   | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
+| [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Medium | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
+
+#### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+直接套模板即可。
+
+```python
+class Solution(object):
+    def searchRange(self, nums, target):
+        def binarySearch(arr, target):
+            i, j = 0, len(arr)
+            while i<j:
+                m = i + (j-i)//2
+                if arr[m]<target:
+                    i = m+1
+                else:
+                    j = m
+            return i
+        
+        start = binarySearch(nums, target)
+        end = binarySearch(nums, target+1)-1
+        if start>end: # 不存在target
+            return [-1, -1]
+        else:
+            return [start, end]
+```
 
 
 
