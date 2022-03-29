@@ -881,10 +881,10 @@ def binarySearch(arr, target):
     i, j = 0, len(arr)
     while i<j:
         m = i + (j-i)//2
-        if arr[m]<target:
-            i = m+1
+        if arr[m]>=target: # 找大于等于target的下界
+            j = m            
         else:
-            j = m
+            i = m+1
     return i
 ```
 
@@ -897,9 +897,28 @@ def binarySearch(arr, target):
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/) | Easy   | https://leetcode-cn.com/problems/search-insert-position/     |
 | [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Easy   | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
 | [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy   | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
-| [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Medium | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
+| [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array/ |
+| [69. x 的平方根 ](https://leetcode-cn.com/problems/sqrtx/)   | Easy   | https://leetcode-cn.com/problems/sqrtx/                      |
+
+#### [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/)
+
+套模板直接秒
+
+```python
+class Solution:
+    def searchInsert(self, nums: List[int], target: int) -> int:
+        i, j = 0, len(nums)
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]<target:
+                i = m+1
+            else:
+                j = m
+        return i
+```
 
 #### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
@@ -924,6 +943,79 @@ class Solution(object):
             return [-1, -1]
         else:
             return [start, end]
+```
+
+#### [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/)
+
+思路：若nums[i]>i,说明该数字小于i,若nums[i]==i,说明该数字在i右边，仍然保持左闭右开
+
+```python
+class Solution:
+    def missingNumber(self, nums: List[int]) -> int:   
+        n = len(nums)
+        i, j = 0, len(nums)
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]>m:
+                j=m
+            elif nums[m]==m:
+                i=m+1
+        
+        return i
+```
+
+#### [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:     
+        
+        def binarySearch(nums, l, r, target):
+            if l>=r:
+                return l
+            while l<r:
+                m = l+(r-l)//2
+                if nums[m]<target:
+                    l = m+1                  
+                else:
+                    r = m # 左开右闭
+            return -1 if nums[l]!=target else l
+        
+        n = len(nums)
+        i, j = 0, n
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]>nums[i]: #[i, m]为有序数组
+                if nums[i]<=target<=nums[m]: # target在有序数组中，直接二分
+                    return binarySearch(nums, i, m+1, target)
+                else:
+                    i=m+1
+            else: #[m, j]为有序数组
+                if nums[m]<=target<=nums[j-1]:
+                    return binarySearch(nums, m, j, target)
+                else:
+                    j=m # 左开右闭
+                
+        return -1 #没找到
+```
+
+#### 69. x 的平方根 
+
+```python
+class Solution:
+    def mySqrt(self, x: int) -> int:
+        if x==1 or x==0:
+            return x
+        i, j = 1, x
+        # 找m*m>x的下界，然后减一就是所求值
+        while i<j:
+            m = i + (j-i)//2
+            if m*m>x:
+                j = m             
+            else:
+                i = m+1
+        return i-1
+
 ```
 
 
