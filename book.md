@@ -902,6 +902,7 @@ def binarySearch(arr, target):
 | [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy   | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
 | [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array/ |
 | [69. x 的平方根 ](https://leetcode-cn.com/problems/sqrtx/)   | Easy   | https://leetcode-cn.com/problems/sqrtx/                      |
+| [74. 搜索二维矩阵](https://leetcode-cn.com/problems/search-a-2d-matrix/) | Medium | https://leetcode-cn.com/problems/search-a-2d-matrix/         |
 
 #### [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/)
 
@@ -919,6 +920,10 @@ class Solution:
                 j = m
         return i
 ```
+
+时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
 
 #### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
@@ -945,6 +950,10 @@ class Solution(object):
             return [start, end]
 ```
 
+时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
+
 #### [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/)
 
 思路：若nums[i]>i,说明该数字小于i,若nums[i]==i,说明该数字在i右边，仍然保持左闭右开
@@ -963,6 +972,10 @@ class Solution:
         
         return i
 ```
+
+时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
 
 #### [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
 
@@ -999,6 +1012,10 @@ class Solution:
         return -1 #没找到
 ```
 
+时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
+
 #### 69. x 的平方根 
 
 ```python
@@ -1018,7 +1035,48 @@ class Solution:
 
 ```
 
+时间复杂度：`O(logn)`
 
+空间复杂度：`O(1)`
+
+[74. 搜索二维矩阵](https://leetcode-cn.com/problems/search-a-2d-matrix/)
+
+先找第一列中小于等于target的上界,即找到大于target的下界再减一，注意，用上面的二分模板都是找下界。
+
+再找这一行中大于等于target的下界。
+
+```python
+class Solution:
+    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
+        m,n = len(matrix), len(matrix[0])
+        i, j = 0, m
+        # 先找小于等于target的上界,即大于target的下界-1
+        while i<j:
+            mi = i+(j-i)//2
+            if matrix[mi][0]>target:
+                j = mi
+            else:
+                i = mi+1
+             
+        # 这时的i是大于target的下界，减一即为小于等于target的上界
+        idx = i-1
+        
+        l, r = 0, n
+        # 再找大于等于target的下界
+        while l<r:
+            mi = l+(r-l)//2
+            if matrix[idx][mi]>=target:
+                r = mi
+            else:
+                l = mi+1
+        
+        return True if l<n and matrix[idx][l]==target else False
+
+```
+
+时间复杂度：`O(logm + logn)`
+
+空间复杂度：`O(1)`
 
 ## 双指针
 ## 滑动窗口
