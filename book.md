@@ -901,6 +901,9 @@ def binarySearch(arr, target):
 | [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Easy   | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
 | [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy   | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
 | [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array/ |
+| [81. 搜索旋转排序数组 II](https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/ |
+| [153. 寻找旋转排序数组中的最小值](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/ |
+| [154. 寻找旋转排序数组中的最小值 II](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/) | Hard   | https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/ |
 | [69. x 的平方根 ](https://leetcode-cn.com/problems/sqrtx/)   | Easy   | https://leetcode-cn.com/problems/sqrtx/                      |
 | [74. 搜索二维矩阵](https://leetcode-cn.com/problems/search-a-2d-matrix/) | Medium | https://leetcode-cn.com/problems/search-a-2d-matrix/         |
 
@@ -1013,6 +1016,133 @@ class Solution:
 ```
 
 时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
+
+#### [81. 搜索旋转排序数组 II](https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/)
+
+这题和前一题的区别在于，前者保证无重复元素，这就导致了当nums[m]>=nums[i]的时候，仍然无法判断[i,m]或[m,j]的有序性，遇到nums[i]=nums[j]=nums[m]的时候直接`i+=1, j-=1`即可。如果不满足三者同时相等，是可以判断出左右的有序性的。
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> bool:
+                        
+        def binarySearch(nums, l, r, target):
+            if l>=r:
+                return l
+            while l<r:
+                m = l+(r-l)//2
+                if nums[m]<target:
+                    l = m+1                  
+                else:
+                    r = m
+            return False if nums[l]!=target else True
+
+        n = len(nums)
+        i, j = 0, n
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]==target:
+                return True
+            if nums[m]==nums[i] and nums[m]==nums[j-1]:
+                i+=1
+                j-=1
+            elif nums[m]>=nums[i]: #[i, m]为有序数组
+                if nums[i]<=target<=nums[m]: # target在有序数组中，直接二分
+                    return binarySearch(nums, i, m+1, target)
+                else:
+                    i=m+1
+            else: #[m, j]为有序数组
+                if nums[m]<=target<=nums[j-1]:
+                    return binarySearch(nums, m, j, target)
+                else:
+                    j=m
+        return False
+```
+
+时间复杂度：`O(n)`，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
+
+空间复杂度：`O(1)`
+
+#### [153. 寻找旋转排序数组中的最小值](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
+
+两种解法：
+
+第一种直接维护一个全局变量，然后二分数组，比较无脑，
+
+第二种通过判断nums[m]和nums[j]来判断最小值所在的位置。
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        i, j = 0, len(nums)
+        res = min(nums[i], nums[j-1])
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]>nums[i]: #[i, m]为有序数组，所以比较res和nums[i]即可
+                res = min(res, nums[i])
+                i=m+1
+            else: #[m, j]为有序数组
+                res = min(res, nums[m])
+                j=m
+        return res
+```
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        i, j = 0, len(nums)-1
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]>nums[j]: # 必定在右边，如[3,4,1,2]中的4或3
+                i=m+1
+            else: # 必定在左边，# 必定在右边，如[3,4,1,2]中的1或2
+                j=m             
+        return nums[i]
+```
+
+时间复杂度：`O(logn)`
+
+空间复杂度：`O(1)`
+
+#### [154. 寻找旋转排序数组中的最小值 II](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/)
+
+还是两种解法，和上面一样
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        n = len(nums)
+        i, j = 0, n
+        res = min(nums[0], nums[n-1])
+        while i<j:
+            m = i + (j-i)//2
+            if nums[m]==nums[i] and nums[m]==nums[j-1]:
+                res = min(res, nums[m])
+                i+=1
+                j-=1
+            elif nums[m]>=nums[i]: #[i, m]为有序数组
+                res = min(res, nums[i])
+                i=m+1
+            else: #[m, j]为有序数组
+                res = min(res, nums[m])
+                j=m
+        return res
+```
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        left, right = 0, len(nums)-1
+        while left < right:
+            mid = (left + right) // 2
+            if nums[mid] > nums[right]: left = mid + 1
+            elif nums[mid] < nums[right]: right = mid
+            else: right = right - 1 # 后退一步再进行判断
+        return nums[left]
+```
+
+时间复杂度：`O(n)`，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
 
 空间复杂度：`O(1)`
 
