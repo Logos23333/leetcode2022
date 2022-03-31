@@ -4,7 +4,7 @@
 
 # 数据结构
 ## 哈希表
-哈希表的思想在于用空间换时间，它访问Key的时间复杂度为O(1)。
+哈希表的思想在于用空间换时间，它访问Key的时间复杂度为$O(1)$。
 
 | 题目 | 难度 | 链接 |
 | --- | --- | --- |
@@ -22,15 +22,15 @@ class Solution:
             mapping[num] = idx
 ```
 
-时间复杂度：`O(n)`
+时间复杂度：$O(n)$
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 ### 前缀和
 
 前缀和通常被用于“连续子序列之和/积”类型的题目中，它计算序列的前k个数之和并用哈希表存储。
-它的思想是，任意连续子数组nums[i:j]之和都可以用total[j]-total[i]表示。
-假设数组为nums，长度为n，我们想知道该数组存不存在和为target的“连续子数组”，用前缀和的模板如下：
+它的思想是，任意连续子数组`nums[i:j]`之和都可以用`total[j]-total[i]`表示。
+假设数组为`nums`，长度为`n`，我们想知道该数组存不存在和为target的“连续子数组”，用前缀和的模板如下：
 
 ```python
 m = {0:-1} # 哈希表初始化
@@ -41,7 +41,7 @@ for idx, num in enumerate(nums):
         return True
     m[total] = idx
 ```
-注意：前缀和有些时候需要初始化哈希表，因为我们要考虑nums[:i]的情况，具体如何初始化要看题目。
+注意：前缀和有些时候需要初始化哈希表，因为我们要考虑`nums[:i]`的情况，具体如何初始化要看题目。
 
 | 题目 | 难度 | 链接 |
 | --- | --- | --- |
@@ -67,9 +67,9 @@ class Solution(object):
         return res
 ```
 
-时间复杂度：`O(n)`
+时间复杂度：$O(n)$
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [1248. 统计「优美子数组」](https://leetcode-cn.com/problems/count-number-of-nice-subarrays/)
 
@@ -90,9 +90,9 @@ class Solution(object):
         return res
 ```
 
-时间复杂度：`O(n)`
+时间复杂度：$O(n)$
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)
 
@@ -121,13 +121,13 @@ class Solution:
         return dfs(root, 0)
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [525. 连续数组](https://leetcode-cn.com/problems/contiguous-array/)
 
-思路：total[i]表示列表`[:i+1]`中0和1的数量。若total[j]和total[i]的值一样，则代表`nums[i+1:j+1]`0和1的数量相同（互相抵消）。
+思路：`total[i]`表示列表`[:i+1]`中0和1的数量。若`total[j]`和`total[i]`的值一样，则代表`nums[i+1:j+1]`0和1的数量相同（互相抵消）。
 
 哈希表记录的是total对应的索引`index`，要注意哈希表的初始化，记录索引的时候要初始化为`-1`。
 
@@ -213,9 +213,9 @@ class Solution(object):
             
 ```
 
-时间复杂度：`O(n)`。
+时间复杂度：$O(n)$。
 
-空间复杂度：`O(n)`。
+空间复杂度：$O(n)$。
 
 #### [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/)
 
@@ -240,9 +240,9 @@ class Solution:
         return self.verifyPostorder(postorder[:idx]) and self.verifyPostorder(postorder[idx:-1])
 ```
 
-时间复杂度：`O(n^2)`。每次都要遍历整个数组，最坏的情况下要遍历n次。
+时间复杂度：$O(n^2)$。每次都要遍历整个数组，最坏的情况下要遍历n次。
 
-空间复杂度：`O(n)`。压栈也会占用空间。
+空间复杂度：$O(n)$。压栈也会占用空间。
 
 #### [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/)
 
@@ -277,9 +277,9 @@ class Solution:
 链接：https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/solution/mian-shi-ti-36-er-cha-sou-suo-shu-yu-shuang-xian-5/
 ```
 
-时间复杂度：`O(n)`，每个节点都需要访问一次。
+时间复杂度：$O(n)$，每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
+空间复杂度：$O(h)$，其中h为树的高度，也就是递归时栈的开销。
 
 解法2：
 
@@ -319,9 +319,9 @@ class Solution(object):
         return head
 ```
 
-时间复杂度：`O(n)`，每个节点都需要访问一次。
+时间复杂度：$O(n)$，每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
+空间复杂度：$O(h)$，其中h为树的高度，也就是递归时栈的开销。
 
 ### 遍历二叉树
 
@@ -352,9 +352,9 @@ class Solution(object):
         return root_node
 ```
 
-时间复杂度：`O(n^2)`。n为树中节点的个数。如果使用哈希表，则时间复杂度为`O(n)`。
+时间复杂度：$O(n^2)$。`n`为树中节点的个数。如果使用哈希表，则时间复杂度为$O(n)$。
 
-空间复杂度：`O(h)`。h为树的高度。如果使用哈希表，空间复杂度为`O(n)`。
+空间复杂度：$O(h)$。`h`为树的高度。如果使用哈希表，空间复杂度为$O(n)$。
 
 #### [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)
 
@@ -375,9 +375,9 @@ class Solution:
         return res
 ```
 
-时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。
 
-空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+空间复杂度：$O(n)$。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
 
 #### [剑指 Offer 32 - II. 从上到下打印二叉树 II](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/)
 
@@ -402,9 +402,9 @@ class Solution:
         return res
 ```
 
-时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。
 
-空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+空间复杂度：$O(n)$。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
 
 #### [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/)
 
@@ -429,9 +429,9 @@ class Solution:
         return res
 ```
 
-时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。倒序操作的时间复杂度也为`O(n)`，因为每个节点都只需要倒一次。
+时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。倒序操作的时间复杂度也为$O(n)$，因为每个节点都只需要倒一次。
 
-空间复杂度：`O(n)`。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+空间复杂度：$O(n)$。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
 
 #### [剑指 Offer 37. 序列化二叉树](https://leetcode-cn.com/problems/xu-lie-hua-er-cha-shu-lcof/)
 
@@ -478,9 +478,9 @@ class Codec:
         return root
 ```
 
-时间复杂度：`O(n)`。n为树中节点的个数。每个节点都需要出队入队一次。
+时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。
 
-空间复杂度：`O(n)`。
+空间复杂度：$O(n)$。
 
 ### 路径总和题
 
@@ -523,9 +523,9 @@ class Solution:
         return dfs(root, targetSum)
 ```
 
-时间复杂度：`O(n)`，每个节点都需要访问一次。
+时间复杂度：$O(n)$，每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，其中h为树的高度，也就是递归时栈的开销。
+空间复杂度：$O(h)$，其中`h`为树的高度，也就是递归时栈的开销。
 
 #### [113. 路径总和 II](https://leetcode-cn.com/problems/path-sum-ii/)
 
@@ -554,9 +554,9 @@ class Solution:
         return self.res
 ```
 
-时间复杂度：`O(n^2)`，其中n是树的节点数。在最坏情况下，树的上半部分为链状，下半部分为完全二叉树，此时，路径的数目为 `O(n)`，并且每一条路径的节点个数也为 `O(n)`，因此要将这些路径全部添加进答案中，时间复杂度为 `O(n^2)`。
+时间复杂度：$O(n^2)$，其中n是树的节点数。在最坏情况下，树的上半部分为链状，下半部分为完全二叉树，此时，路径的数目为 $O(n)$，并且每一条路径的节点个数也为 $O(n)$，因此要将这些路径全部添加进答案中，时间复杂度为 $O(n^2)$。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 #### [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/)
 
@@ -585,13 +585,13 @@ class Solution:
         return dfs(root, 0)
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [剑指 Offer II 051. 节点之和最大的路径](https://leetcode-cn.com/problems/jC7MId/)
 
-注意这里的dfs，返回值是以root节点为顶点的单边路径最大和，它和题目要求的路径和是不一样的。我们之所以要返回前者，是因为对于父节点来说，它只需要前者，所以我们在返回前者的同时，更新全局变量res。
+注意这里的dfs，返回值是以root节点为顶点的单边路径最大和，它和题目要求的路径和是不一样的。我们之所以要返回前者，是因为对于父节点来说，它只需要前者，所以我们在返回前者的同时，更新全局变量`res`。
 
 做完这题可以去做做[剑指 Offer 68 - II. 二叉树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
 
@@ -623,9 +623,9 @@ class Solution:
 
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 ### 其它题
 
@@ -699,9 +699,9 @@ class Solution:
         return True if self.res and abs(left_depth-right_depth)<=1 else False
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 优化2：
 
@@ -728,9 +728,9 @@ class Solution(object):
 
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 #### [剑指 Offer 26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
 
@@ -761,9 +761,9 @@ class Solution(object):
         return self.isSubStructure(A.left, B) or self.isSubStructure(A.right, B) 
 ```
 
-时间复杂度：`O(m*n)`，其中m为A的节点数量，n为B的节点数量，最坏情况下，对于A的每个节点，都要进行n次比较。
+时间复杂度：$O(m*n)$，其中`m`为A的节点数量，`n`为B的节点数量，最坏情况下，对于A的每个节点，都要进行`n`次比较。
 
-空间复杂度：`O(m)`，栈的深度，最坏情况下为m。
+空间复杂度：$O(m)$，栈的深度，最坏情况下为`m`。
 
 #### [剑指 Offer 27. 二叉树的镜像](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/)
 
@@ -783,9 +783,9 @@ class Solution:
         return root
 ```
 
-时间复杂度：`O(n)`。每个节点都需要访问一次。
+时间复杂度：$O(n)$。每个节点都需要访问一次。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 [剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/)
 
@@ -810,9 +810,9 @@ class Solution:
 
 ```
 
-时间复杂度：`O(n)`。最坏情况下，左子树的每个节点都需要和右子树的每个节点比较一次，也即比较`n/2`次。
+时间复杂度：$O(n)$。最坏情况下，左子树的每个节点都需要和右子树的每个节点比较一次，也即比较`n/2`次。
 
-空间复杂度：`O(h)`，h为二叉树的高度。
+空间复杂度：$O(h)$，`h`为二叉树的高度。
 
 #### [剑指 Offer 68 - I. 二叉搜索树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
 
@@ -838,7 +838,7 @@ class Solution:
 
 这题的dfs其实挺巧妙的，值得回顾。
 
-这个dfs，如果是还没有递归判断（也就是第一行），出现了root==p or root==q，那么root也就是最近公共祖先。
+这个dfs，如果是还没有递归判断（也就是第一行），出现了`root==p or root==q`，那么root也就是最近公共祖先。
 但是如果p,q各自在左右子树时，这时的dfs返回值其实不是最近公共祖先，而是p或q，并不是严格意义上的dfs，只是可以巧妙的判断，如果left 和right同时存在的话，即p,q分居root左右，那么此时应该返回root。
 
 如果p, q在同一边，这时候才是严格意义上的dfs，也即返回了子树的最近公共祖先。
@@ -890,7 +890,7 @@ def binarySearch(arr, target):
 
 有几点需要注意：
 
-1. 上面的二分搜索是`左闭右开`，即搜索[i, j)，i,j分别初始化为0和数组长度。
+1. 上面的二分搜索是`左闭右开`，即搜索`[i, j)`，i,j分别初始化为0和数组长度。
 2. 计算middle时，python虽然不会整数溢出，但也要保证长度为1时，left和right的middle落在[left, right)区间。
 3. 若数组有target，上面的二分搜索返回的是`大于等于target的下界`，比如`[1,2,2,3], 2`返回的是`1`（即第一个2对应的位置）。如果不存在target，返回的是`大于target的下界`，比如`[1,2,2,4], 3`返回的是`3`（即第一个4对应的位置）。
 4. 如果需要找`等于target的上界`，即最后一个target对应的位置，只需要`binarySearch(arr, target+1)-1`即可。比如`[1,2,2,4], 2`，我们想找到最后一个2，应该这么调用 `ans = binarySearch([1,2,2,4], 2+1) - 1`。最后返回的是`2`。
@@ -924,9 +924,9 @@ class Solution:
         return i
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
@@ -953,13 +953,13 @@ class Solution(object):
             return [start, end]
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/)
 
-思路：若nums[i]>i,说明该数字小于i,若nums[i]==i,说明该数字在i右边，仍然保持左闭右开
+思路：若`nums[i]>i`,说明该数字小于`i`,若`nums[i]==i`,说明该数字在`i`右边，仍然保持左闭右开
 
 ```python
 class Solution:
@@ -976,9 +976,9 @@ class Solution:
         return i
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
 
@@ -1015,13 +1015,13 @@ class Solution:
         return -1 #没找到
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [81. 搜索旋转排序数组 II](https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/)
 
-这题和前一题的区别在于，前者保证无重复元素，这就导致了当nums[m]>=nums[i]的时候，仍然无法判断[i,m]或[m,j]的有序性，遇到nums[i]=nums[j]=nums[m]的时候直接`i+=1, j-=1`即可。如果不满足三者同时相等，是可以判断出左右的有序性的。
+这题和前一题的区别在于，前者保证无重复元素，这就导致了当`nums[m]>=nums[i]`的时候，仍然无法判断`[i,m]`或`[m,j]`的有序性，遇到`nums[i]=nums[j]=nums[m]`的时候直接`i+=1, j-=1`即可。如果不满足三者同时相等，是可以判断出左右的有序性的。
 
 ```python
 class Solution:
@@ -1060,9 +1060,9 @@ class Solution:
         return False
 ```
 
-时间复杂度：`O(n)`，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
+时间复杂度：$O(n)$，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [153. 寻找旋转排序数组中的最小值](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
 
@@ -1070,7 +1070,7 @@ class Solution:
 
 第一种直接维护一个全局变量，然后二分数组，比较无脑，
 
-第二种通过判断nums[m]和nums[j]来判断最小值所在的位置。
+第二种通过判断`nums[m]`和`nums[j]`来判断最小值所在的位置。
 
 ```python
 class Solution:
@@ -1101,9 +1101,9 @@ class Solution:
         return nums[i]
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### [154. 寻找旋转排序数组中的最小值 II](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/)
 
@@ -1142,9 +1142,9 @@ class Solution:
         return nums[left]
 ```
 
-时间复杂度：`O(n)`，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
+时间复杂度：$O(n)$，最坏情况下数组全为相等的数字，这时候会遍历整个数组。
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 #### 69. x 的平方根 
 
@@ -1165,9 +1165,9 @@ class Solution:
 
 ```
 
-时间复杂度：`O(logn)`
+时间复杂度：$O(logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 [74. 搜索二维矩阵](https://leetcode-cn.com/problems/search-a-2d-matrix/)
 
@@ -1204,9 +1204,9 @@ class Solution:
 
 ```
 
-时间复杂度：`O(logm + logn)`
+时间复杂度：$O(logm + logn)$
 
-空间复杂度：`O(1)`
+空间复杂度：$O(1)$
 
 ## 双指针
 ## 滑动窗口
@@ -1389,9 +1389,9 @@ class Solution(object):
         return dp[0][0]
 ```
 
-时间复杂度：`O(m*n)`
+时间复杂度：$O(m*n)$
 
-空间复杂度：`O(m*n)`
+空间复杂度：$O(m*n)$
 
 #### [63. 不同路径 II](https://leetcode-cn.com/problems/unique-paths-ii/)
 
@@ -1417,9 +1417,9 @@ class Solution(object):
         return dp[0][0]
 ```
 
-时间复杂度：`O(m*n)`
+时间复杂度：$O(m*n)$
 
-空间复杂度：`O(m*n)`
+空间复杂度：$O(m*n)$
 
 #### [64. 最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/)
 
@@ -1442,9 +1442,9 @@ class Solution(object):
         return dp[0][0]
 ```
 
-时间复杂度：`O(m*n)`
+时间复杂度：$O(m*n)$
 
-空间复杂度：`O(m*n)`
+空间复杂度：$O(m*n)$
 
 #### [120. 三角形最小路径和](https://leetcode-cn.com/problems/triangle/)
 
@@ -1462,9 +1462,9 @@ class Solution(object):
         return dp[0]
 ```
 
-时间复杂度：`O(n^2)`，其中n是三角形的行数
+时间复杂度：$O(n^2)$，其中n是三角形的行数
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [931. 下降路径最小和](https://leetcode-cn.com/problems/minimum-falling-path-sum/)
 
@@ -1486,13 +1486,13 @@ class Solution(object):
             
 ```
 
-时间复杂度：`O(n^2)`
+时间复杂度：$O(n^2)$
 
-空间复杂度：`O(n^2)`
+空间复杂度：$O(n^2)$
 
 #### [1289. 下降路径最小和  II](https://leetcode-cn.com/problems/minimum-falling-path-sum-ii/)
 
-用数组minn 存放 `min(dp[:i] + dp[i+1:])`,这样的好处是每次计算dp时非常方便。
+用数组minn 存放 `min(dp[:i] + dp[i+1:])$,这样的好处是每次计算dp时非常方便。
 
 ```python
 class Solution(object):
@@ -1529,9 +1529,9 @@ class Solution(object):
         
 ```
 
-时间复杂度：`O(n^2)`，`getMin`函数复杂度为`O(n)`
+时间复杂度：$O(n^2)$，`getMin`函数复杂度为$O(n)$
 
-空间复杂度：`O(n)`
+空间复杂度：$O(n)$
 
 #### [1575. 统计所有可行路径](https://leetcode-cn.com/problems/count-all-possible-routes/)
 
@@ -1591,9 +1591,9 @@ class Solution(object):
         return dp[fuel][start]%((10**9) + 7)
 ```
 
-时间复杂度：`O(f*n*n)`,其中`f`为燃料总量，`n`为城市总数
+时间复杂度：$O(f*n*n)$,其中`f`为燃料总量，`n`为城市总数
 
-空间复杂度：`O(n*max(n, f))`
+空间复杂度：$O(n*max(n, f))$
 
 #### [576. 出界的路径数](https://leetcode-cn.com/problems/out-of-boundary-paths/)
 
@@ -1627,9 +1627,9 @@ class Solution(object):
         return dp[maxMove][startRow][startColumn]%((10**9)+7)
 ```
 
-时间复杂度：`O(f*m*n)`,其中`f`为可移动的次数
+时间复杂度：$O(f*m*n)$,其中`f`为可移动的次数
 
-空间复杂度：`O(f*m*n)`
+空间复杂度：$O(f*m*n)$
 
 #### [1301. 最大得分的路径数目](https://leetcode-cn.com/problems/number-of-paths-with-max-score/)
 
@@ -1740,9 +1740,9 @@ class Solution(object):
         return maxn[m-1][n-1]%mod, num[m-1][n-1]%mod
 ```
 
-时间复杂度：`O(m*n)`
+时间复杂度：$O(m*n)$
 
-空间复杂度：`O(m*n)`
+空间复杂度：$O(m*n)$
 
 ### 0-1背包问题模板
 
@@ -1770,9 +1770,9 @@ def solution():
     return dp[N-1][V]
 ```
 
-时间复杂度：`O(N*V)`
+时间复杂度：$O(N*V)$
 
-空间复杂度：`O(N*V)`
+空间复杂度：$O(N*V)$
 
 #### dp[2\]\[V\+1]模板
 
@@ -1795,9 +1795,9 @@ def solution():
     return dp[(N-1)&1][V]
 ```
 
-时间复杂度：`O(N*V)`
+时间复杂度：$O(N*V)$
 
-空间复杂度：`O(V)`
+空间复杂度：$O(V)$
 
 #### ⭐dp\[V\+1]模板
 
@@ -1820,9 +1820,9 @@ def solution():
     return dp[V]
 ```
 
-时间复杂度：`O(N*V)`
+时间复杂度：$O(N*V)$
 
-空间复杂度：`O(V)`
+空间复杂度：$O(V)$
 
 ### 0-1背包问题
 
@@ -1866,9 +1866,9 @@ class Solution(object):
         return dp[target]==target
 ```
 
-时间复杂度：`O(n*target)`,其中`n`为数组长度，`target`为数组之和的一半。
+时间复杂度：$O(n*target)$,其中`n`为数组长度，`target`为数组之和的一半。
 
-空间复杂度：`O(target+1)`
+空间复杂度：$O(target+1)$
 
 解法二：
 
@@ -1895,9 +1895,9 @@ class Solution(object):
         return dp[target]
 ```
 
-时间复杂度：`O(n*target)`,其中`n`为数组长度，`target`为数组之和的一半。
+时间复杂度：$O(n*target)$,其中`n`为数组长度，`target`为数组之和的一半。
 
-空间复杂度：`O(target+1)`
+空间复杂度：$O(target+1)$
 
 ### 完全背包问题模板
 
@@ -1922,9 +1922,9 @@ def solution():
     return dp[N-1][V]
 ```
 
-时间复杂度：`O(N*V*V)`
+时间复杂度：$O(N*V*V)$
 
-空间复杂度：`O(N*V)`
+空间复杂度：$O(N*V)$
 
 #### dp[2][V+1\]模板
 
@@ -1946,9 +1946,9 @@ def solution():
     return dp[(N-1)&1][V]
 ```
 
-时间复杂度：`O(N*V*V)`
+时间复杂度：$O(N*V*V)$
 
-空间复杂度：`O(V)`
+空间复杂度：$O(V)$
 
 #### dp[V+1\]模板
 
@@ -1970,13 +1970,13 @@ def solution():
     return dp[V]
 ```
 
-时间复杂度：`O(N*V*V)`
+时间复杂度：$O(N*V*V)$
 
-空间复杂度：`O(V)`
+空间复杂度：$O(V)$
 
 #### ⭐dp[V+1\]模板(优化)
 
-完全背包问题的递推公式为：`dp[i][j] = max(dp[i-1][j], dp[i][j-v[i]]+w[i])`
+完全背包问题的递推公式为：`dp[i][j] = max(dp[i-1][j], dp[i][j-v[i]]+w[i])$
 
 ```python
 def solution():
@@ -1992,19 +1992,139 @@ def solution():
     return dp[V]
 ```
 
-时间复杂度：`O(N*V)`
+时间复杂度：$O(N*V)$
 
-空间复杂度：`O(V)`
+空间复杂度：$O(V)$
 
 ### 完全背包问题
 
-| 题目 | 难度 | 链接 |
-| ---- | ---- | ---- |
-|      |      |      |
-|      |      |      |
-|      |      |      |
+| 题目                                                         | 难度   | 链接                                              |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------- |
+| [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/) | Medium | https://leetcode-cn.com/problems/perfect-squares/ |
+| [322. 零钱兑换](https://leetcode-cn.com/problems/coin-change/) | Medium | https://leetcode-cn.com/problems/coin-change/     |
+| [518. 零钱兑换 II](https://leetcode-cn.com/problems/coin-change-2/) | Medium | https://leetcode-cn.com/problems/coin-change-2/   |
+|                                                              |        |                                                   |
 
+#### [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
 
+解法一：（超时，n=6665时超时）
+
+$dp[i][j] = min(dp[i-1][j-1], dp[i-1][j-nums[i]]+1, dp[i-1][j-2*nums[i]]+2, ..., dp[i-1][j-k*nums[i]]+k)$
+
+```python
+class Solution:
+    def numSquares(self, n: int) -> int:
+        num = int(n**(1/2))
+        nums = [i*i for i in range(1, num+1)]
+
+        # dp[i][j]表示前i个数和为j的最少数量
+        dp = [[0 for i in range(n+1)] for i in range(num)]
+        for i in range(n+1):
+            dp[0][i] = i
+        for i in range(1, num):
+            for j in range(1, n+1):
+                cur = dp[i-1][j]
+                x = j//nums[i]
+
+                for k in range(x+1):
+                    cur = min(cur, dp[i-1][j-k*nums[i]]+k)
+                
+                dp[i][j] = cur
+        # print(dp)
+        return dp[num-1][n]
+
+```
+
+时间复杂度：$O(n^2*\sqrt n)$
+
+空间复杂度:$O(\sqrt n *n)$
+
+解法二：
+
+观察到$dp[i][j-nums[i]] = min(dp[i-1][j-nums[i]], dp[i-1][j-2*nums[i]]+1, ..., dp[i-1][j-k*nums[i]]+k-1)$
+
+原本的dp公式可化简为$dp[i][j] = min(dp[i-1][j], dp[i][j-nums[i]]+1)$
+
+即$dp[j] = min(dp[j], dp[j-nums[i]]+1)$
+
+```python
+class Solution:
+    def numSquares(self, n: int) -> int:
+        num = int(n**(1/2))
+        nums = [i*i for i in range(1, num+1)]
+
+        # dp[j]表示和为j的最少数量
+        dp = [0 for i in range(n+1)]
+        # dp init
+        for i in range(n+1):
+            dp[i] = i # 只有1能用的时候
+
+        for i in range(1, num):
+            for j in range(1, n+1):
+                if j>=nums[i]:
+                    dp[j] = min(dp[j], dp[j-nums[i]]+1)
+        return dp[n]
+```
+
+时间复杂度：$O(\sqrt n*n)$
+
+空间复杂度：$O(n)$
+
+#### [322. 零钱兑换](https://leetcode-cn.com/problems/coin-change/)
+
+这题的动态转移方程和上一题是一模一样的，直接算即可，注意初始状态的初始化。
+
+```python
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        if amount == 0:
+            return 0
+        n = len(coins)
+        # dp[j]表示和为j的最少数量
+        dp = [-1 for i in range(amount+1)]
+
+        # dp init
+        for i in range(amount+1):
+            dp[i] = i//coins[0] if i%coins[0]==0 else float('inf') # 只有coins[0]能用的时候
+
+        for i in range(1, n):
+            for j in range(1, amount+1):
+                if j>=coins[i]:                   
+                    dp[j] = min(dp[j-coins[i]]+1, dp[j])
+        return dp[amount] if dp[amount]!=float('inf') else -1
+```
+
+时间复杂度：$O(n*amount)$
+
+空间复杂度：$O(amount)$
+
+#### 518. 零钱兑换 II
+
+先得到一般的状态转移方程$dp[i][j] = dp[i-1][j] + dp[i][j-coins[i]] + ... + dp[i][j-k*coins[i]]$
+
+再化简得到$dp[i][j] = dp[i-1][j] + dp[i][j-coins[i]]$
+
+最后化为一维的，得到$dp[j] = dp[j] + dp[j-coins[i]]$
+
+```python
+class Solution:
+    def change(self, amount: int, coins: List[int]) -> int:
+        n = len(coins)
+        dp = [0 for i in range(amount+1)]
+
+        for i in range(amount+1):
+            dp[i] = 1 if i%coins[0]==0 else 0
+        
+        for i in range(1, n):
+            for j in range(1, amount+1):
+                if j>=coins[i]:
+                    dp[j]+=dp[j-coins[i]]
+        return dp[amount]
+```
+
+时间复杂度：$O(n*amount)$
+
+空间复杂度：$O(amount)$
 
 ## 排序
 ### 堆排
