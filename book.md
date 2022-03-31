@@ -1259,8 +1259,6 @@ while j<n:
 
 
 ## dfs
-### 备忘录
-### 剪枝
 ### 博弈论
 
 ### 状态压缩
@@ -1355,6 +1353,649 @@ class Solution:
 ```
 
 ## 动态规划
+
+### 路径问题
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [62. 不同路径](https://leetcode-cn.com/problems/unique-paths/) | Medium | https://leetcode-cn.com/problems/unique-paths/               |
+| [63. 不同路径 II](https://leetcode-cn.com/problems/unique-paths-ii/) | Medium | https://leetcode-cn.com/problems/unique-paths-ii/            |
+| [64. 最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/) | Medium | https://leetcode-cn.com/problems/minimum-path-sum/           |
+| [120. 三角形最小路径和](https://leetcode-cn.com/problems/triangle/) | Medium | https://leetcode-cn.com/problems/triangle/                   |
+| [931. 下降路径最小和](https://leetcode-cn.com/problems/minimum-falling-path-sum/) | Medium | https://leetcode-cn.com/problems/minimum-falling-path-sum/   |
+| [1289. 下降路径最小和  II](https://leetcode-cn.com/problems/minimum-falling-path-sum-ii/) | Hard   | https://leetcode-cn.com/problems/minimum-falling-path-sum-ii/ |
+| [1575. 统计所有可行路径](https://leetcode-cn.com/problems/count-all-possible-routes/) | Hard   | https://leetcode-cn.com/problems/count-all-possible-routes/  |
+| [576. 出界的路径数](https://leetcode-cn.com/problems/out-of-boundary-paths/) | Medium | https://leetcode-cn.com/problems/out-of-boundary-paths/      |
+
+#### [62. 不同路径](https://leetcode-cn.com/problems/unique-paths/)
+
+观察到`dp[i][j]=dp[i+1][j]+dp[i][j+1]`，即当前状态依赖下一行和下一列，所以从后往前迭代即可。
+
+```python
+class Solution(object):
+    def uniquePaths(self, m, n):
+        dp = [[0 for i in range(n)] for i in range(m)]
+        # dp init
+        dp[m-1][n-1] = 1
+        for i in range(m-2, -1, -1):
+            dp[i][n-1] = dp[i+1][n-1]
+        for j in range(n-2, -1, -1):
+            dp[m-1][j] = dp[m-1][j+1]
+		
+        # 从后往前迭代
+        for i in range(m-2, -1, -1):
+            for j in range(n-2, -1, -1):
+                dp[i][j] = dp[i+1][j] + dp[i][j+1]
+        return dp[0][0]
+```
+
+时间复杂度：`O(m*n)`
+
+空间复杂度：`O(m*n)`
+
+#### [63. 不同路径 II](https://leetcode-cn.com/problems/unique-paths-ii/)
+
+增加一个判断，即当前节点有障碍物时不进行更新（路径总数为0）。
+
+```python
+class Solution(object):
+    def uniquePathsWithObstacles(self, obstacleGrid):
+        m,n = len(obstacleGrid), len(obstacleGrid[0])
+        dp = [[0 for i in range(n)] for i in range(m)]
+        dp[m-1][n-1] = 1 if obstacleGrid[m-1][n-1]==0 else 0
+        for i in range(m-2, -1, -1):
+            if obstacleGrid[i][n-1]!=1:
+                dp[i][n-1] = dp[i+1][n-1]
+        for j in range(n-2, -1, -1):
+            if obstacleGrid[m-1][j]!=1:
+                dp[m-1][j] = dp[m-1][j+1]
+
+        for i in range(m-2, -1, -1):
+            for j in range(n-2, -1, -1):
+                if obstacleGrid[i][j]!=1:
+                    dp[i][j] = dp[i+1][j] + dp[i][j+1]
+        return dp[0][0]
+```
+
+时间复杂度：`O(m*n)`
+
+空间复杂度：`O(m*n)`
+
+#### [64. 最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/)
+
+```python
+class Solution(object):
+    def minPathSum(self, grid):
+        m, n = len(grid), len(grid[0])
+        dp = [[0 for i in range(n)] for i in range(m)]
+        # dp init
+        dp[m-1][n-1] = grid[m-1][n-1]
+        for i in range(m-2, -1, -1):
+            dp[i][n-1] = dp[i+1][n-1] + grid[i][n-1]
+        for j in range(n-2, -1, -1):
+            dp[m-1][j] = dp[m-1][j+1] + grid[m-1][j]
+		
+        # 从后往前迭代
+        for i in range(m-2, -1, -1):
+            for j in range(n-2, -1, -1):
+                dp[i][j] = min(dp[i+1][j], dp[i][j+1]) + grid[i][j]
+        return dp[0][0]
+```
+
+时间复杂度：`O(m*n)`
+
+空间复杂度：`O(m*n)`
+
+#### [120. 三角形最小路径和](https://leetcode-cn.com/problems/triangle/)
+
+这题可以用滚动数组降低空间复杂度，因为当前行的更新只依赖于下一行。
+
+```python
+class Solution(object):
+    def minimumTotal(self, triangle):
+        m, n = len(triangle), len(triangle[-1])
+        dp = [triangle[m-1][i] for i in range(n)]
+
+        for i in range(m-2, -1, -1):
+            for j in range(i+1):
+                dp[j] = triangle[i][j] + min(dp[j], dp[j+1])
+        return dp[0]
+```
+
+时间复杂度：`O(n^2)`，其中n是三角形的行数
+
+空间复杂度：`O(n)`
+
+#### [931. 下降路径最小和](https://leetcode-cn.com/problems/minimum-falling-path-sum/)
+
+```python
+class Solution(object):
+    def minFallingPathSum(self, matrix):
+        n = len(matrix)
+        dp = [[0 for i in range(n)] for i in range(n)]
+        for i in range(n):
+            dp[n-1][i] = matrix[n-1][i]
+
+        for i in range(n-2, -1, -1):
+            for j in range(n):
+                minn = dp[i+1][j]
+                minn = min(minn, dp[i+1][j-1]) if j-1>=0 else minn
+                minn = min(minn, dp[i+1][j+1]) if j+1<n else minn
+                dp[i][j] = matrix[i][j] + minn 
+        return min(dp[0])
+            
+```
+
+时间复杂度：`O(n^2)`
+
+空间复杂度：`O(n^2)`
+
+#### [1289. 下降路径最小和  II](https://leetcode-cn.com/problems/minimum-falling-path-sum-ii/)
+
+用数组minn 存放 `min(dp[:i] + dp[i+1:])`,这样的好处是每次计算dp时非常方便。
+
+```python
+class Solution(object):
+    def minFallingPathSum(self, grid):
+        n = len(grid)
+        if n==1:
+            return grid[0][0]
+        dp = [grid[-1][i] for i in range(n)]
+
+        def getMin(dp):
+            # minn[i]的含义是除dp[i]外的最小值
+            minn = [0 for i in range(n)]
+            # 遍历一遍dp，得到第一小和第二小
+            fir, sec = float('inf'), float('inf')
+            for i in range(n):
+                if dp[i]<fir:
+                    sec = fir
+                    fir = dp[i]
+                elif dp[i]<sec:
+                    sec = dp[i]
+            for i in range(n):
+                if dp[i]==fir: # 第一小之外的最小值为第二小值
+                    minn[i] = sec
+                else: # 其它值之外的最小值为第一小值
+                    minn[i] = fir
+            return minn
+        
+        minn = getMin(dp)
+        for i in range(n-2, -1, -1):
+            for j in range(n):
+                dp[j] = grid[i][j] + minn[j]
+            minn = getMin(dp)
+        return min(dp)
+        
+```
+
+时间复杂度：`O(n^2)`，`getMin`函数复杂度为`O(n)`
+
+空间复杂度：`O(n)`
+
+#### [1575. 统计所有可行路径](https://leetcode-cn.com/problems/count-all-possible-routes/)
+
+解法一：dfs
+
+```python
+class Solution(object):
+    def countRoutes(self, locations, start, finish, fuel):
+        n = len(locations)
+        m = {}
+        def dfs(cur_city, cur_fuel, path):
+            cur_state = str((cur_city, cur_fuel))
+            if cur_state in m:
+                return m[cur_state]     
+            paths = 0
+            if cur_city==finish: # 在finish的城市停下不走了
+                paths+=1
+            
+            if cur_fuel == 0:
+                return paths
+            for i in range(n):
+                cost = abs(locations[cur_city]-locations[i])
+                if cur_city==i or cost>cur_fuel:
+                    continue
+                paths += dfs(i, cur_fuel-cost, path+[i])
+
+            m[cur_state] = paths
+            return paths
+        res = dfs(start, fuel, [start])%((10**9 )+7)
+        return res
+```
+
+解法二：
+
+```python
+class Solution(object):
+    def countRoutes(self, locations, start, finish, fuel):
+        n = len(locations)
+        # dp[i][j]表示在城市j还剩i燃料时的路径数量
+        dp = [[0 for i in range(n)] for i in range(fuel+1)]
+        # dis[i][j]表示城市i到城市j的距离
+        dis = [[0 for i in range(n)] for i in range(n)]
+        for i in range(n):
+            for j in range(n):
+                dis[i][j] = abs(locations[i]-locations[j])
+        
+        # dp init
+        for i in range(fuel+1):
+            for j in range(n):
+                if j==finish:
+                    dp[i][j] = 1            
+                for k in range(n):
+                    if j==k:
+                        continue
+                    if dis[j][k]<=i: # 燃料足够从j走到k
+                        dp[i][j] += dp[i-dis[j][k]][k] # 在消耗了dis[j][k]燃料后走到了城市k
+        return dp[fuel][start]%((10**9) + 7)
+```
+
+时间复杂度：`O(f*n*n)`,其中`f`为燃料总量，`n`为城市总数
+
+空间复杂度：`O(n*max(n, f))`
+
+#### [576. 出界的路径数](https://leetcode-cn.com/problems/out-of-boundary-paths/)
+
+```python
+class Solution(object):
+    def findPaths(self, m, n, maxMove, startRow, startColumn):
+        if maxMove==0:
+            return 0
+        # dp[k][i][j]表示在剩下k次移动机会时，球在(i, j)位置能踢出界的数量
+        dp = [[[0 for i in range(n)] for i in range(m)] for i in range(maxMove+1)]
+
+        # 初始化边界状态
+        for i in range(m):
+            dp[1][i][0] += 1
+            dp[1][i][n-1] += 1
+        for j in range(n):
+            dp[1][0][j] += 1
+            dp[1][m-1][j] += 1
+        
+        for k in range(2, maxMove+1):
+            for i in range(m):
+                for j in range(n):
+                    # 对应上下左右
+                    dp[k][i][j] = dp[k][i][j] + dp[k-1][i+1][j] if i+1<m else dp[k][i][j]
+                    dp[k][i][j] = dp[k][i][j] + dp[k-1][i][j+1] if j+1<n else dp[k][i][j]
+                    dp[k][i][j] = dp[k][i][j] + dp[k-1][i-1][j] if i-1>=0 else dp[k][i][j]
+                    dp[k][i][j] = dp[k][i][j] + dp[k-1][i][j-1] if j-1>=0 else dp[k][i][j]
+                    
+                    # 也可以直接踢出界
+                    dp[k][i][j] += dp[1][i][j]
+        return dp[maxMove][startRow][startColumn]%((10**9)+7)
+```
+
+时间复杂度：`O(f*m*n)`,其中`f`为可移动的次数
+
+空间复杂度：`O(f*m*n)`
+
+#### [1301. 最大得分的路径数目](https://leetcode-cn.com/problems/number-of-paths-with-max-score/)
+
+解法一：dfs
+
+```python
+class Solution(object):
+    def pathsWithMaxScore(self, board):
+        m = {}
+        def dfs(i, j):
+            # 返回(i, j)的最大得分和此得分的方案数
+            if i==0 and j==0:
+                return 0, 1           
+            
+            if board[i][j] == 'X':
+                return 0, 0
+
+            pos = str((i, j))
+            if pos in m:
+                return m[pos][0], m[pos][1]
+		
+            if j-1>=0:
+                left_max, left_num = dfs(i, j-1)
+            else:
+                left_max, left_num = 0, 0
+                
+            if i-1>=0:
+                up_max, up_num = dfs(i-1, j)
+            else:
+                up_max, up_num = 0, 0
+                
+            if i-1>=0 and j-1>=0:
+                ul_max, ul_num = dfs(i-1, j-1) 
+            else:
+                ul_max, ul_num = 0, 0
+                
+            maxn = max(left_max, max(up_max, ul_max))
+            cur_num = 0
+            if maxn==left_max:
+                cur_num+=left_num
+            if maxn==up_max:
+                cur_num+=up_num
+            if maxn==ul_max:
+                cur_num+=ul_num
+
+            maxn = maxn + int(board[i][j]) if board[i][j]!='S' else maxn
+            m[pos] = (maxn, cur_num)
+            return maxn, cur_num
+
+        maxn, num = dfs(len(board)-1, len(board[0])-1)
+        mod = (10**9)+7
+        maxn = maxn%mod if num!=0 else 0
+        num = num%mod
+        return maxn, num
+```
+
+解法二：dp
+
+```python
+class Solution(object):
+    def pathsWithMaxScore(self, board):
+        m, n = len(board), len(board[0])
+
+        # maxn[i][j]表示得分最大值，num[i][j]表示得到此最大得分的路径数
+        num = [[0 for i in range(n)] for i in range(m)]
+        maxn = [[0 for i in range(n)] for i in range(m)]
+        
+        for i in range(m):
+            for j in range(n):
+                if board[i][j]=='E':
+                    maxn[i][j] = 0
+                    num[i][j] = 1
+                    continue
+                if board[i][j] == 'X':
+                    continue
+
+                if j-1>=0:
+                    left_max, left_num = maxn[i][j-1], num[i][j-1]
+                else:
+                    left_max, left_num = 0, 0
+
+                if i-1>=0:
+                    up_max, up_num = maxn[i-1][j], num[i-1][j]
+                else:
+                    up_max, up_num = 0, 0
+                
+                if i-1>=0 and j-1>=0:
+                    ul_max, ul_num = maxn[i-1][j-1], num[i-1][j-1]
+                else:
+                    ul_max, ul_num = 0, 0
+                
+                cur_max = max(left_max, max(up_max, ul_max))
+                cur_num = 0
+                if cur_max==left_max:
+                    cur_num+=left_num
+                if cur_max==up_max:
+                    cur_num+=up_num
+                if cur_max==ul_max:
+                    cur_num+=ul_num
+
+                cur_max = cur_max + int(board[i][j]) if board[i][j]!='S' else cur_max
+                maxn[i][j] = cur_max
+                num[i][j] = cur_num
+        
+        if num[m-1][n-1]==0:
+            return 0, 0
+        mod = (10**9)+7
+        return maxn[m-1][n-1]%mod, num[m-1][n-1]%mod
+```
+
+时间复杂度：`O(m*n)`
+
+空间复杂度：`O(m*n)`
+
+### 0-1背包问题模板
+
+0-1背包问题的通用模板
+
+问题定义：有`N`件物品和一个容量为`V`的背包，第`i`件物品的体积为`v[i]`，价值为`w[i]`，求解将哪些物品装入背包，可使这些物品的总体积不超过背包容量，且总价值最大。
+
+#### dp[N\]\[V\+1]模板
+
+```python
+def solution():
+    # dp[i][j]的含义是前i件物品，背包容量为j的最大价值
+    dp = [[0 for i in range(V+1)] for i in range(N)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = w[0] if v[0]<=i else 0
+    
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0
+            if j>=v[i]: # 第i件物品可以被装进背包
+                cur = max(cur, dp[i-1][j-v[i]] + w[i]) # 装进背包（可能会扔掉背包的一些东西来腾出空间）
+            cur = max(cur, dp[i-1][j]) # 不装进背包
+            dp[i][j] = cur
+    return dp[N-1][V]
+```
+
+时间复杂度：`O(N*V)`
+
+空间复杂度：`O(N*V)`
+
+#### dp[2\]\[V\+1]模板
+
+```python
+def solution():
+    # 观察dp表达式，只需要一个2*(V+1)的数组即可
+    # dp[i][j]的含义是前i&1件物品，背包容量为j的最大价值
+    dp = [[0 for i in range(V+1)] for i in range(2)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = w[0] if v[0]<=i else 0
+    
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0
+            if j>=v[i]: # 第i件物品可以被装进背包
+                cur = max(cur, dp[(i-1)&1][j-v[i]]) + w[i]
+            cur = max(cur, dp[(i-1)&1][j]) # 不装进背包
+            dp[i&1][j] = cur
+    return dp[(N-1)&1][V]
+```
+
+时间复杂度：`O(N*V)`
+
+空间复杂度：`O(V)`
+
+#### ⭐dp\[V\+1]模板
+
+```python
+def solution():
+    # 观察dp表达式，dp[i][j]依赖的是dp[i-1][j]和dp[i-1][j-v[i]]，如果从后往前遍历，维护一个一维数组即可
+    # dp[i][j]的含义是前i件物品，背包容量为j的最大价值
+    dp = [0 for i in range(V+1)]
+   	# dp init
+    for i in range(V+1):
+        dp[i] = w[0] if v[0]<=i else 0
+
+    for i in range(0, N):
+        for j in range(V, v[i]-1, -1): # 当j<v[i]时，第i件物品闭不可能被装进背包，直接剪枝
+            cur = 0
+            if j>=v[i]: # 第i件物品可以被装进背包
+                cur = max(cur, dp[j-v[i]]) + w[i] # 装进背包（可能会扔掉背包的一些东西来腾出空间）
+            cur = max(cur, dp[j]) # 不装进背包
+            dp[j] = cur
+    return dp[V]
+```
+
+时间复杂度：`O(N*V)`
+
+空间复杂度：`O(V)`
+
+### 0-1背包问题
+
+在熟悉了背包问题的模板后，我们可以将一些其他问题转化为背包问题求解。
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [416. 分割等和子集](https://leetcode-cn.com/problems/partition-equal-subset-sum/) | medium | https://leetcode-cn.com/problems/partition-equal-subset-sum/ |
+|                                                              |        |                                                              |
+|                                                              |        |                                                              |
+
+#### [416. 分割等和子集](https://leetcode-cn.com/problems/partition-equal-subset-sum/)
+
+假设数组总和为`sum`, `target=sum/2`，问题等价为`V=target`时，最大价值能否等于`target`的0-1背包问题。
+
+也就是说在某个数组中选若干个数，使得其总和为某个特定值，都可以转换为0-1背包问题。
+
+解法一：
+
+不修改原背包dp的含义
+
+```python
+class Solution(object):
+    def canPartition(self, nums):
+        
+        sumn = sum(nums)
+        if sumn%2:
+            return False
+        target = sumn//2
+        n = len(nums)
+		
+        ## dp init
+        dp = [0 for i in range(target+1)]
+        for i in range(target+1):
+            dp[i] = nums[0] if nums[0]<=i else 0
+
+        for i in range(1, n):
+            for j in range(target, nums[i]-1, -1):
+                dp[j] = max(dp[j-nums[i]]+nums[i], dp[j]) 
+
+        return dp[target]==target
+```
+
+时间复杂度：`O(n*target)`,其中`n`为数组长度，`target`为数组之和的一半。
+
+空间复杂度：`O(target+1)`
+
+解法二：
+
+修改原背包dp的含义
+
+`dp[i][j]`定义为从前`i`个数能否选出恰好为和为`j`的子数组
+
+```python
+class Solution(object):
+    def canPartition(self, nums):
+        sumn = sum(nums)
+        if sumn%2:
+            return False
+        target = sumn//2
+        n = len(nums)
+        
+        dp = [False for i in range(target+1)]
+        for i in range(target+1):
+            dp[i] = True if nums[0]==i else False
+
+        for i in range(1, n):
+            for j in range(target, nums[i]-1, -1):
+                dp[j] = dp[j] or dp[j-nums[i]] # 选择nums[i]或不选
+        return dp[target]
+```
+
+时间复杂度：`O(n*target)`,其中`n`为数组长度，`target`为数组之和的一半。
+
+空间复杂度：`O(target+1)`
+
+### 完全背包问题模板
+
+#### dp[N][V+1\]模板
+
+```python
+def solution():
+    # dp[i][j]的含义是前i件物品，背包容量为j的最大价值
+    dp = [[0 for i in range(V+1)] for i in range(N)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = (i//v[0])*w[0]
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0         
+            # 可以放k件i物品
+            num = j//v[i]
+            for k in range(1, num+1):
+                cur = max(cur, dp[i-1][j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[i-1][j]) # 不装进背包
+            dp[i][j] = cur
+    return dp[N-1][V]
+```
+
+时间复杂度：`O(N*V*V)`
+
+空间复杂度：`O(N*V)`
+
+#### dp[2][V+1\]模板
+
+```python
+def solution():
+    dp = [[0 for i in range(V+1)] for i in range(2)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = (i//v[0])*w[0]
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0         
+            # 可以放k件i物品
+            num = j//v[i]
+            for k in range(1, num+1):
+                cur = max(cur, dp[(i-1)&1][j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[(i-1)&1][j]) # 不装进背包
+            dp[i&1][j] = cur
+    return dp[(N-1)&1][V]
+```
+
+时间复杂度：`O(N*V*V)`
+
+空间复杂度：`O(V)`
+
+#### dp[V+1\]模板
+
+```python
+def solution():
+    dp = [0 for i in range(V+1)]
+   	# dp init
+    for i in range(V+1):
+        dp[i] = (i//v[0])*w[0]
+    for i in range(1, N):
+        for j in range(V+1):
+            cur = 0         
+            # 可以放k件i物品
+            num = j//v[i]
+            for k in range(1, num+1):
+                cur = max(cur, dp[j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[j]) # 不装进背包
+            dp[j] = cur
+    return dp[V]
+```
+
+时间复杂度：`O(N*V*V)`
+
+空间复杂度：`O(V)`
+
+#### ⭐dp[V+1\]模板(优化)
+
+完全背包问题的递推公式为：`dp[i][j] = max(dp[i-1][j], dp[i][j-v[i]]+w[i])`
+
+```python
+def solution():
+    dp = [0 for i in range(V+1)]
+   	# dp init
+    for i in range(N):
+        for j in range(V+1):
+            cur = 0
+            if j>=v[i]:
+                cur = max(cur, dp[j-v[i]] + w[i]) 
+            cur = max(cur, dp[j]) # 不装进背包
+            dp[j] = cur
+    return dp[V]
+```
+
+时间复杂度：`O(N*V)`
+
+空间复杂度：`O(V)`
+
 ## 排序
 ### 堆排
 
