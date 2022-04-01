@@ -2299,7 +2299,7 @@ def solution():
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
 | [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/) | Medium | https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/ |
 | [474. 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/) | Medium | https://leetcode-cn.com/problems/ones-and-zeroes/            |
-|                                                              |        |                                                              |
+| [879. 盈利计划](https://leetcode-cn.com/problems/profitable-schemes/) | Hard   | https://leetcode-cn.com/problems/profitable-schemes/         |
 
 #### [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
 
@@ -2417,6 +2417,131 @@ class Solution(object):
 时间复杂度：$O(num*m*n)$，num为strs的长度
 
 空间复杂度：$O(m*n)$
+
+#### [879. 盈利计划](https://leetcode-cn.com/problems/profitable-schemes/)
+
+```python
+class Solution(object):
+    def profitableSchemes(self, n, minProfit, group, profit):
+        max_profit = self.cal(group, profit, n) # 先求最大利润
+        
+        m = len(group) # 总共的工作数
+        # dp[i][j][k]表示有前i个工作可以选，有j名员工,产生利润k的计划数
+        dp = [[[0 for i in range(max_profit+1)] for i in range(n+1)] for i in range(m)]
+
+        for i in range(n+1):
+            for j in range(max_profit+1):
+                dp[0][i][j] = 1 if (group[0]<=i and profit[0]==j) or j==0 else 0
+        for i in range(1, m):
+            p = profit[i]
+            g = group[i]
+            for j in range(n+1):
+                for k in range(max_profit+1):                   
+                    dp[i][j][k] += dp[i-1][j][k]
+                    if j>=g and k>=p:
+                        dp[i][j][k] += dp[i-1][j-g][k-p]
+        res = 0
+        for i in range(minProfit, max_profit+1): # 求满足题意利润的所有方案数
+            res += dp[m-1][n][i]
+        return res%((10**9)+7)
+    
+    def cal(self, group, profit, n):
+        # 求n名员工，m个工作，每个工作i需要的员工是group[i]，利润profit[i]的最大利润
+        # 很显然，这是个0-1背包问题，时间复杂度：O(m*n)
+        m = len(group)
+        # dp[i][j]的含义是前i件物品，背包容量为j的最大价值
+        dp = [0 for i in range(n+1)]
+        # dp init
+        for i in range(n+1):
+            dp[i] = profit[0] if group[0]<=i else 0
+
+        for i in range(0, m):
+            for j in range(n, group[i]-1, -1): # 当j<v[i]时，第i件物品闭不可能被装进背包，直接剪枝
+                cur = 0
+                if j>=group[i]: # 第i件物品可以被装进背包
+                    cur = max(cur, dp[j-group[i]]) + profit[i] # 装进背包（可能会扔掉背包的一些东西来腾出空间）
+                cur = max(cur, dp[j]) # 不装进背包
+                dp[j] = cur
+        return dp[n]
+        
+```
+
+时间复杂度：$O(maxProfit*m*n)$，$maxProfit$为最大利润数
+
+空间复杂度：$O(maxProfit*m*n)$
+
+#### [494. 目标和](https://leetcode-cn.com/problems/target-sum/)
+
+dfs（使用全局变量）：超时
+
+```python
+class Solution(object):
+    def findTargetSumWays(self, nums, target):
+        n = len(nums)
+        self.res = 0
+        def dfs(cur, k):
+            if cur==target and k==n:
+                self.res += 1
+                return
+            if k>=n:
+                return
+            dfs(cur+nums[k], k+1)
+            dfs(cur-nums[k], k+1)
+        
+        dfs(0, 0)
+        return self.res
+```
+
+dfs（使用返回值）：超时
+
+```python
+class Solution(object):
+    def findTargetSumWays(self, nums, target):
+        n = len(nums)
+        def dfs(cur, k):
+            if cur==target and k==n:
+                return 1
+            if k>=n:
+                return 0
+            left = dfs(cur+nums[k], k+1)
+            right = dfs(cur-nums[k], k+1)
+            res = left+right
+            return res
+        
+        return dfs(0, 0)
+```
+
+时间复杂度：$O(2^n)$
+
+空间复杂度：$O(1)$，忽略递归消耗
+
+dfs+备忘录：
+
+```python
+class Solution(object):
+    def findTargetSumWays(self, nums, target):
+        n = len(nums)
+        m = {}
+        def dfs(cur, k):
+            state = str((cur, k))
+            if state in m:
+                return m[state]
+            if cur==target and k==n:
+                return 1
+            if k>=n:
+                return 0
+            left = dfs(cur+nums[k], k+1)
+            right = dfs(cur-nums[k], k+1)
+            res = left+right
+            m[state] = res
+            return res
+        
+        return dfs(0, 0)
+```
+
+时间复杂度：$O(n*\sum abs(nums[i]))$
+
+空间复杂度：$O(n*\sum abs(nums[i]))$
 
 ## 排序
 
