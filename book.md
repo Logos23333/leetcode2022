@@ -2107,7 +2107,7 @@ def solution():
 
 #### [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
 
-解法一：（超时，n=6665时超时）
+解法一：（n=6665时超时）
 
 $dp[i][j] = min(dp[i-1][j-1], dp[i-1][j-nums[i]]+1, dp[i-1][j-2*nums[i]]+2, ..., dp[i-1][j-k*nums[i]]+k)$
 
@@ -2226,7 +2226,200 @@ class Solution:
 
 空间复杂度：$O(amount)$
 
+### 多重背包模板
+
+问题定义：有`N`件物品和一个容量为`V`的背包，第`i`件物品的体积为`v[i]`，价值为`w[i]`，数量为`s[i]`，求解将哪些物品装入背包，可使这些物品的总体积不超过背包容量，且总价值最大。
+
+#### dp[N][V+1\]模板
+
+```python
+def solution():
+    # dp[i][j]的含义是前i件物品，背包容量为j的最大价值
+    dp = [[0 for i in range(V+1)] for i in range(N)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = min(i//v[0], s[0])*w[0]
+    print(dp)
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0         
+            # 可以放k件i物品
+            num = min(j//v[i], s[i]) # 第i件物品的数量是s[i]
+            for k in range(1, num+1):
+                cur = max(cur, dp[i-1][j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[i-1][j]) # 不装进背包
+            dp[i][j] = cur
+    return dp[N-1][V]
+```
+
+#### dp[2][V+1\]模板
+
+```python
+def solution():
+    dp = [[0 for i in range(V+1)] for i in range(2)]
+   	# dp init
+    for i in range(V+1):
+        dp[0][i] = min(i//v[0], s[0])*w[0]
+    print(dp)
+    for i in range(1, N):
+        for j in range(1, V+1):
+            cur = 0                   
+            num = min(j//v[i], s[i]) # 第i件物品的数量是s[i]
+            for k in range(1, num+1): # 可以放k件i物品
+                cur = max(cur, dp[(i-1)&1][j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[(i-1)&1][j]) # 不装进背包
+            dp[i&1][j] = cur
+    return dp[(N-1)&1][V]
+```
+
+#### dp[V+1\]模板
+
+```python
+def solution():
+    # dp[j]的含义是背包容量为j的最大价值
+    dp = [0 for i in range(V+1)]
+   	# dp init
+    for i in range(V+1):
+        dp[i] = min(i//v[0], s[0])*w[0]
+    for i in range(1, N):
+        for j in range(V, v[i]-1, -1):
+            cur = 0         
+            # 可以放k件i物品
+            num = min(j//v[i], s[i]) # 第i件物品的数量是s[i]
+            for k in range(1, num+1):
+                cur = max(cur, dp[j-k*v[i]] + k*w[i]) 
+            cur = max(cur, dp[j]) # 不装进背包
+            dp[j] = cur
+    return dp[V]
+```
+
+### 背包问题
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/) | Medium | https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/ |
+| [474. 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/) | Medium | https://leetcode-cn.com/problems/ones-and-zeroes/            |
+|                                                              |        |                                                              |
+
+#### [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
+
+朴素转移方程：$dp[i][j] = dp[i-1][j-1] + ...+ dp[i-1][j-k]$
+
+```python
+class Solution(object):
+    def numRollsToTarget(self, n, k, target):
+        # dp[i][j]表示前i个骰子，和为target的方式
+        dp = [[0 for i in range(target+1)] for i in range(n)]
+
+        for i in range(1, target+1):
+            # 只能用1个骰子
+            dp[0][i] = 1 if k>=i else 0 
+        for i in range(1, n):
+            for j in range(1, target+1):
+                cur = 0
+                # cur = dp[i-1][j] # 必须要用第i个骰子
+                for x in range(1, k+1):
+                    if j-x<0:
+                        break
+                    cur += dp[i-1][j-x]
+                dp[i][j] = cur
+        mod = (10**9)+7
+        return dp[n-1][target]%mod
+
+```
+
+时间复杂度：$O(n*target*k)$
+
+空间复杂度：$O(n*target)$
+
+化简转移方程：$dp[i][j] = dp[i-1][j-1] + dp[i][j-1] - dp[i-1][j-k-1]$
+
+```python
+class Solution(object):
+    def numRollsToTarget(self, n, k, target):
+        # dp[i][j]表示前i个骰子，和为target的方式
+        dp = [[0 for i in range(target+1)] for i in range(n)]
+
+        for i in range(1, target+1):
+            # 只能用1个骰子
+            dp[0][i] = 1 if k>=i else 0 
+        for i in range(1, n):
+            for j in range(1, target+1):             
+                dp[i][j] += dp[i][j-1]+dp[i-1][j-1]
+                if j-k-1>=0:
+                    dp[i][j]-=dp[i-1][j-k-1]
+        mod = (10**9)+7
+        return dp[n-1][target]%mod
+```
+
+时间复杂度：$O(n*target)$
+
+空间复杂度：$O(n*target)$
+
+#### [474. 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/)
+
+```python
+class Solution(object):
+    def findMaxForm(self, strs, m, n):
+        num = len(strs)
+
+        # dp[i][j][k]的意思是前i个字符串，最多有i个0j个1的最大子集长度
+        dp = [[[0 for i in range(n+1)] for i in range(m+1)] for i in range(num)]
+        
+        # 提前计算得到各个字符串的01个数
+        count_z = [string.count('0') for string in strs]
+        count_o = [string.count('1') for string in strs]
+        for i in range(m+1):
+            for j in range(n+1):
+                dp[0][i][j] = 1 if count_z[0]<=i and count_o[0]<=j else 0
+        
+        for i in range(1, num):
+            for j in range(m+1):
+                for k in range(n+1):                    
+                    dp[i][j][k] =  dp[i-1][j][k] # 不选                
+                    if j>=count_z[i] and k>=count_o[i]: # 选
+                        dp[i][j][k] = max(dp[i-1][j-count_z[i]][k-count_o[i]] + 1, dp[i][j][k]) 
+        return dp[num-1][m][n]
+
+```
+
+时间复杂度：$O(num*m*n)$，num为strs的长度
+
+空间复杂度：$O(num*m*n)$
+
+滚动数组优化：
+
+```python
+class Solution(object):
+    def findMaxForm(self, strs, m, n):
+        num = len(strs)
+
+        # dp[i][j][k]的意思是前i个字符串，最多有i个0j个1的最大子集长度
+        dp = [[0 for i in range(n+1)] for i in range(m+1)]
+        
+        count_z = [string.count('0') for string in strs]
+        count_o = [string.count('1') for string in strs]
+        for i in range(m+1):
+            for j in range(n+1):
+                dp[i][j] = 1 if count_z[0]<=i and count_o[0]<=j else 0
+        
+        for i in range(1, num):
+            zero = count_z[i]
+            one = count_o[i]
+            for j in range(m, -1, -1):
+                for k in range(n, -1, -1):                                   
+                    if j>=count_z[i] and k>=count_o[i]: # 选
+                        dp[j][k] = max(dp[j-zero][k-one] + 1, dp[j][k]) 
+        return dp[m][n]
+
+```
+
+时间复杂度：$O(num*m*n)$，num为strs的长度
+
+空间复杂度：$O(m*n)$
+
 ## 排序
+
 ### 堆排
 
 堆也被叫做优先队列，常被用来解决“第K大的数”等类型的问题。
