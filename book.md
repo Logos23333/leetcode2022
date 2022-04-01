@@ -2539,9 +2539,39 @@ class Solution(object):
         return dfs(0, 0)
 ```
 
-时间复杂度：$O(n*\sum abs(nums[i]))$
+时间复杂度：$O(n*\sum nums[i])$
 
-空间复杂度：$O(n*\sum abs(nums[i]))$
+空间复杂度：$O(n*\sum nums[i])$
+
+动态规划
+
+```python
+class Solution(object):
+    def findTargetSumWays(self, nums, target):
+        n = len(nums)
+        sumn = sum(nums)
+        # dp[i][j]的含义是前i个数，构成j的方案数
+        dp = [[0 for i in range(2*sumn+1)] for j in range(n)]
+
+        for i in range(2*sumn+1):
+            if abs(i-sumn)==nums[0]:
+                if nums[0]!=0:
+                    dp[0][i] = 1
+                else:
+                    dp[0][i] = 2
+        for i in range(1, n):
+            for j in range(-1*sumn, sumn+1):
+                # dp[i][j+sumn] += dp[i-1][j+sumn] # 第i个数必须要选
+                if j-nums[i]>=-1*sumn:
+                    dp[i][j+sumn] += dp[i-1][j-nums[i]+sumn]
+                if j+nums[i]<sumn+1:
+                    dp[i][j+sumn] += dp[i-1][j+nums[i]+sumn]
+        return dp[n-1][target+sumn] if target+sumn<2*sumn+1 else 0
+```
+
+时间复杂度：$O(n*\sum nums[i])$
+
+空间复杂度：$O(n*\sum nums[i])$
 
 ## 排序
 
