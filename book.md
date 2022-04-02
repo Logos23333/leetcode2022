@@ -1369,6 +1369,12 @@ state的第i位为0时代表数组的第i位元素未被使用，为1时代表�
 
 这样的好处是，state是数字，很方便存储，而且可被哈希,可以用哈希表优化dfs速度。
 
+
+
+思考：有的dfs可以用参数k来表示当前遍历到了数组的哪个位置，什么时候传参数k，什么时候用状态压缩？
+
+如果是传参数k，是不能“回头”的，所以如果需要“回头”，要用状态压缩。
+
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
 | [526. 优美的排列](https://leetcode-cn.com/problems/beautiful-arrangement/) | Medium | https://leetcode-cn.com/problems/beautiful-arrangement/      |
@@ -1379,31 +1385,30 @@ state的第i位为0时代表数组的第i位元素未被使用，为1时代表�
 
 ```python
 class Solution:
-    def countArrangement(self, n: int) -> int:
+    def countArrangement(self, n):
         m = {}
-        def dfs(state, path):
+        def dfs(state, l):
             """
             # state: 用来记录n个整数的使用情况
-            # path: 当前排列
+            # l: 当前排列的长度
             """
-            if len(path)==n:
+            if l==n:
                 return 1 
             if state in m:
                 return m[state]
-
+            
             res = 0
             for i in range(1, n+1):
                 cur = 1<<(i-1) 
                 if cur & state!=0: # 当前数字已被使用
                     continue
-
-                cur_length = len(path) + 1
+                cur_length = l + 1
                 if cur_length%i ==0 or i%cur_length==0: # 题目要求                    
-                    res+= dfs(state|cur, path+[i], m) # state|cur是将对应位数置为1
+                    res+= dfs(state|cur, l+1) # state|cur是将对应位数置为1
             m[state] = res
             return res
         
-        res = dfs(0, [], m)
+        res = dfs(0, 0)
         return res 
 ```
 
@@ -1411,27 +1416,26 @@ class Solution:
 
 ```python
 class Solution:
-    def canPartitionKSubsets(self, nums: List[int], k: int) -> bool:
+    def canPartitionKSubsets(self, nums, k):
         sum_nums = sum(nums)
         if sum_nums%k!=0 or len(nums)<k:
             return False
         
-        length = int(sum_nums/k)
-        if max(nums)>length:
+        sumn = int(sum_nums/k) # 每个子集的和
+        if max(nums)>sumn:
             return False
         
         m = {}
-        def dfs(state, cur_length, length, num_left, m):
+        def dfs(state, cur_sum, num_left):
             '''
             # state: 2*n，state的第i位为1代表nums的第i个数被用过
-            # cur_length: 当前的长度
-            # length: 每个子集的总和
+            # cur_sumn: 当前的长度
             # num_left：还剩下多少个子集
             '''
-            if cur_length > length:
+            if cur_sum > sumn: # 超过了指定大小
                 return False
-            if cur_length == length:
-                return dfs(state, 0, length, num_left-1, m)
+            if cur_sum == sumn:
+                return dfs(state, 0, num_left-1)
             if num_left==0 and state == (1<<len(nums)) - 1:
                 return True
             
@@ -1441,13 +1445,13 @@ class Solution:
                 cur = 1<<i
                 if cur & state != 0:
                     continue
-                if dfs(cur|state, cur_length+nums[i], length, num_left, m):
+                if dfs(cur|state, cur_sum+nums[i], num_left):
                     return True
             
             m[state] = False
             return False
         
-        return dfs(0, 0, length, k, m)
+        return dfs(0, 0, k)
 ```
 
 ## 动态规划
@@ -2300,6 +2304,8 @@ def solution():
 | [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/) | Medium | https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/ |
 | [474. 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/) | Medium | https://leetcode-cn.com/problems/ones-and-zeroes/            |
 | [879. 盈利计划](https://leetcode-cn.com/problems/profitable-schemes/) | Hard   | https://leetcode-cn.com/problems/profitable-schemes/         |
+| [494. 目标和](https://leetcode-cn.com/problems/target-sum/)  | Medium | https://leetcode-cn.com/problems/target-sum/                 |
+| [1049. 最后一块石头的重量 II](https://leetcode-cn.com/problems/last-stone-weight-ii/) | Medium | https://leetcode-cn.com/problems/last-stone-weight-ii/       |
 
 #### [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
 
@@ -2572,6 +2578,35 @@ class Solution(object):
 时间复杂度：$O(n*\sum nums[i])$
 
 空间复杂度：$O(n*\sum nums[i])$
+
+#### [1049. 最后一块石头的重量 II](https://leetcode-cn.com/problems/last-stone-weight-ii/)
+
+将问题转换为，把石头分成两堆，使其重量尽可能相等，所求为这两堆石头的差，可以参考[416. 分割等和子集](https://leetcode-cn.com/problems/partition-equal-subset-sum/)
+
+```python
+class Solution(object):
+    def lastStoneWeightII(self, stones):
+        n = len(stones)
+        sumn = sum(stones)
+        target = (sumn+1)//2
+
+        # dp[i][j]代表前i块石头小于等于j重量的最大重量
+        dp = [0 for i in range(target+1)]
+
+        for i in range(target+1):
+            dp[i] = stones[0] if i>=stones[0] else 0
+        
+        for i in range(1, n):
+            s = stones[i]
+            for j in range(target, s, -1):
+                dp[j] = max(dp[j], dp[j-s]+s)
+
+        return abs(sumn-dp[target]-dp[target])
+```
+
+时间复杂度：$O(n*\sum stones[i]/2)$
+
+空间复杂度: $O(\sum stones[i]/2)$
 
 ## 排序
 
