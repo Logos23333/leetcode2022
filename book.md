@@ -2717,6 +2717,10 @@ class Solution(object):
 | [368. 最大整除子集](https://leetcode-cn.com/problems/largest-divisible-subset/) | Medium | https://leetcode-cn.com/problems/largest-divisible-subset/   |
 | [413. 等差数列划分](https://leetcode-cn.com/problems/arithmetic-slices/) | Medium | https://leetcode-cn.com/problems/arithmetic-slices/          |
 | [446. 等差数列划分 II - 子序列](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/) | Hard   | https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/ |
+| [198. 打家劫舍](https://leetcode-cn.com/problems/house-robber/) | Medium | https://leetcode-cn.com/problems/house-robber/               |
+| [740. 删除并获得点数](https://leetcode-cn.com/problems/delete-and-earn/) | Medium | https://leetcode-cn.com/problems/delete-and-earn/            |
+| [978. 最长湍流子数组](https://leetcode-cn.com/problems/longest-turbulent-subarray/) | Medium | https://leetcode-cn.com/problems/longest-turbulent-subarray/ |
+| [1035. 不相交的线](https://leetcode-cn.com/problems/uncrossed-lines/) | Medium | https://leetcode-cn.com/problems/uncrossed-lines/            |
 
 #### [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
 
@@ -2985,7 +2989,146 @@ class Solution(object):
 
 #### [446. 等差数列划分 II - 子序列](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/)
 
+思路：动态规划，$dp[i][j]$表示以$nums[i]$结尾的，公差为$d$的数列个数，分析可得到递推方程 $dp[i] = \sum dp[j][diff]$，
 
+同时，我们需要更新$dp[i][diff] += dp[j][diff] + 1$(算上nums[j], nums[i]这个等差数列)，
+
+这里有个巧妙的地方，当$dp[j][diff]]$不为0时，表示其等差数列长度已经大于等于2，这时再加上$nums[i]$，长度必定大于等于3。
+
+```python
+class Solution:
+    def numberOfArithmeticSlices(self, nums: List[int]) -> int:
+        n = len(nums)
+        dp = [defaultdict(int) for i in range(n)]
+
+        res = 0
+        for i in range(n):
+            for j in range(i):
+                diff = nums[i]-nums[j]
+                res += dp[j][diff]
+                dp[i][diff] += dp[j][diff]+1
+        return res
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n^{2})$
+
+#### [198. 打家劫舍](https://leetcode-cn.com/problems/house-robber/)
+
+```python
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        n = len(nums)
+        # dp[i][0]表示不偷i号的最大金额，dp[i][1]表示偷i号的最大金额（只考虑nums[:i+1]）
+        dp =[[0 for i in range(2)] for i in range(n)]
+
+        dp[0][1] = nums[0]
+        for i in range(1, n):
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1])
+            dp[i][1] = dp[i-1][0] + nums[i]
+        return max(dp[n-1][0], dp[n-1][1]) 
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+```python
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        n = len(nums)
+        x, y = 0, nums[0]
+        for i in range(1, n):
+            x, y = max(x, y), x+nums[i] 
+        return max(x, y) 
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [740. 删除并获得点数](https://leetcode-cn.com/problems/delete-and-earn/)
+
+可将问题转换成[198. 打家劫舍](https://leetcode-cn.com/problems/house-robber/)
+
+```python
+class Solution:
+    def deleteAndEarn(self, nums: List[int]) -> int:
+        m = {}
+        for num in nums:
+            m[num] = m.get(num, 0) + num
+        
+        # m[key]为key对应的和，即cnt*key
+        key_list = sorted(list(m.keys()))
+        n = len(key_list)
+
+        x, y = 0, m[key_list[0]]       
+        for i in range(1, n):
+            if key_list[i]-key_list[i-1]==1: # 间隔等于1， 对应198题的情况
+                x, y = max(x, y), x+m[key_list[i]]
+            else: # 间隔大于1，所以前一个数字无所谓选或不选
+                x, y = max(x, y), max(x, y) + m[key_list[i]]
+            
+        return max(x, y)
+```
+
+时间复杂度：$O(m+nlogn)$，$m$为$nums$的长度，$n$为$nums$中不同元素的个数
+
+空间复杂度：$O(n)$，哈希表所需大小为$O(n)$
+
+#### [978. 最长湍流子数组](https://leetcode-cn.com/problems/longest-turbulent-subarray/)
+
+和198. 打家劫舍思想差不多
+
+```python
+class Solution:
+    def maxTurbulenceSize(self, arr: List[int]) -> int:
+        n = len(arr)
+        # dp[i]表示以arr[i]为结尾的最长湍流子数组长度 dp[i][0]代表结尾升序，dp[i][1]代表结尾降序
+        x, y = 1, 1
+        res = 1
+        for i in range(1, n):
+            if arr[i]>arr[i-1]:
+                x, y = y + 1, 1
+            elif arr[i]<arr[i-1]:
+                x, y = 1, x + 1
+            else: # 相等
+                x, y = 1, 1
+            res = max(res, max(x, y))
+        return res
+```
+
+时间复杂度： $O(n)$
+
+空间复杂度：$O(1)$
+
+#### [1035. 不相交的线](https://leetcode-cn.com/problems/uncrossed-lines/)
+
+LCS的变形题
+
+```python
+class Solution:
+    def maxUncrossedLines(self, nums1: List[int], nums2: List[int]) -> int:
+        m = len(nums1)
+        n = len(nums2)
+
+        dp = [[0 for i in range(n+1)] for j in range(m+1)]
+        res = 0
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if nums1[i-1]==nums2[j-1]:
+                    dp[i][j] = dp[i-1][j-1] + 1
+                else:
+                    dp[i][j] = max(dp[i][j-1], dp[i-1][j])
+
+                res = max(res, dp[i][j])
+        return res
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
 
 ### 数学
 
