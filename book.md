@@ -2608,6 +2608,245 @@ class Solution(object):
 
 空间复杂度: $O(\sum stones[i]/2)$
 
+### LCS和LIS问题
+
+[宫水三叶:LCS 问题与 LIS 问题的相互关系，以及 LIS 问题的最优解证明](https://mp.weixin.qq.com/s?__biz=MzU4NDE3MTEyMA==&mid=2247487814&idx=1&sn=e33023c2d474ff75af83eda1c4d01892&chksm=fd9cba59caeb334f1fbfa1aefd3d9b2ab6abfccfcab8cb1dbff93191ae9b787e1b4681bbbde3&token=252055586&lang=zh_CN#rd)
+
+#### LIS问题
+
+问题定义：求给定数组的最长上升子序列长度
+
+解法一：朴素dp
+
+```python
+def solution(nums):
+    n = len(nums)
+    # dp[i]表示以nums[i]为底的最长递增子序列长度
+    # dp[i] = max(dp[j])+1 if dp[j]<dp[i] and j<i
+    dp = [1 for i in range(n)]
+    res = 0
+    for i in range(n):
+        maxn = 0
+        for j in range(i):
+            if nums[i]>nums[j]:
+            	maxn = max(maxn, dp[j])
+        dp[i] = maxn + 1
+        res = max(res, dp[i])
+    return res
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+解法二：贪心+二分+dp
+
+思路：通过维护一个贪心数组$g$，$g[len]$表示上升子序列长度为$len$的最小结尾元素。更新$dp[i]$的时候去找小于$nums[i]$的上界，可以通过二分解决，整体复杂度是$O(nlogn)$
+
+```python
+def solution(nums):
+    n = len(nums)
+    # dp[i]表示以nums[i]结尾的最长递增子序列长度
+    dp = [0 for i in range(n)]
+    dp[1] = 1
+
+    # g[i]表示上升子序列长度为i的最小结尾元素
+    g = [float('inf') for i in range(n+1)]
+    g[0], g[1] = float('-inf'), nums[0]
+
+    def find(arr, target, end):
+        # 寻找大于等于target的下界
+        i, j = 0, end
+        while i<j:
+            m = i + (j-i)//2
+            if target<=arr[m]:
+                j = m
+            else:
+                i = m+1
+        return i
+
+        res = 0
+        for i in range(1, n):
+            lst_len = find(g, nums[i], i+1) # O(logn)
+            dp[i] = lst_len
+            g[lst_len] = min(nums[i], g[lst_len]) # 更新g数组
+            res = max(res, dp[i])
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+#### LCS问题
+
+问题定义：最长公共子序列问题，求两个数组的最长公共子序列
+
+朴素dp:
+
+```python
+class Solution(object):
+    def longestCommonSubsequence(self, text1, text2):
+        m = len(text1)
+        n = len(text2)
+
+        # dp[i][j]表示text1[:i]和text2[:j]的最长公共子序列长度
+        dp = [[0 for i in range(n+1)] for i in range(m+1)]
+        dp[0][0] = 0
+
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if text1[i-1]==text2[j-1]:
+                    dp[i][j] = dp[i-1][j-1] + 1
+                else:
+                    dp[i][j] = max(dp[i][j-1], dp[i-1][j])
+        return dp[m][n]
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+### 序列dp
+
+| 题目                                                         | 难度   | 链接                                                         |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/) | Medium | https://leetcode-cn.com/problems/longest-increasing-subsequence/ |
+| [334. 递增的三元子序列](https://leetcode-cn.com/problems/increasing-triplet-subsequence/) | Medium | https://leetcode-cn.com/problems/increasing-triplet-subsequence/ |
+|                                                              |        |                                                              |
+|                                                              |        |                                                              |
+|                                                              |        |                                                              |
+
+#### [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
+
+经典LIS问题，直接秒
+
+```python
+class Solution(object):
+    def lengthOfLIS(self, nums):
+        n = len(nums)
+        if n==1:
+            return 1
+        dp = [0 for i in range(n)]
+        g = [float('inf') for i in range(n+1)]
+
+        dp[0] = 1
+        g[0], g[1] = float('-inf'), nums[0]
+
+        res = 1
+        for i in range(1, n):
+            target = nums[i]
+            l, r = 0, i+1
+            while l<r:
+                m = l + (r-l)//2
+                if g[m]>=target:
+                    r = m
+                else:
+                    l = m + 1
+            g[l] = min(g[l], nums[i])
+            dp[i] = l
+            res = max(res, dp[i])
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+#### [334. 递增的三元子序列](https://leetcode-cn.com/problems/increasing-triplet-subsequence/)
+
+解法一：暴力dp(超时,75/76)
+
+```python
+class Solution(object):
+    def increasingTriplet(self, nums):
+        # dp[i]表示以nums[i]为底的最长递增子序列长度
+        # dp[i] = max(dp[j])+1 if dp[j]<dp[i] and j<i
+        n = len(nums)
+        dp = [1 for i in range(n)]
+        for i in range(n):
+            maxn = 0
+            for j in range(i):
+                if nums[i]>nums[j]:
+                    maxn = max(maxn, dp[j])
+            dp[i] = maxn + 1
+            if dp[i]>=3:
+                return True
+        return False
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+解法二：LIS式dp
+
+```python
+class Solution(object):
+    def increasingTriplet(self, nums):
+        n = len(nums)
+        if n<3:
+            return False
+        # dp[i]表示以nums[i]结尾的最长递增子序列长度
+        dp = [0 for i in range(n)]
+        dp[1] = 1
+
+        # g[i]表示上升子序列长度为i的最小结尾元素
+        g = [float('inf') for i in range(n+1)]
+        g[0], g[1] = float('-inf'), nums[0]
+        
+        def find(arr, target, end):
+            # 寻找大于等于target的下界
+            i, j = 0, end
+            while i<j:
+                m = i + (j-i)//2
+                if target<=arr[m]:
+                    j = m
+                else:
+                    i = m+1
+            return i
+        
+        for i in range(1, n):
+            lst_len = find(g, nums[i], i+1) # O(logn)
+            dp[i] = lst_len
+            g[lst_len] = min(nums[i], g[lst_len])
+            if dp[i]>=3:
+                return True
+
+        return False
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+解法三：
+
+维护两个变量first和second，使first和second尽可能小
+
+```python
+class Solution(object):
+    def increasingTriplet(self, nums):
+        n = len(nums)
+        if n<3:
+            return False
+        first, second = nums[0], float('inf')
+        for i in range(1, n):
+            num = nums[i]
+            if num>second:
+                return True
+            elif num>first:
+                second = num
+            elif num<first:
+                first = num
+
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## 排序
 
 ### 堆排
