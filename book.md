@@ -2713,9 +2713,10 @@ class Solution(object):
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
 | [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/) | Medium | https://leetcode-cn.com/problems/longest-increasing-subsequence/ |
 | [334. 递增的三元子序列](https://leetcode-cn.com/problems/increasing-triplet-subsequence/) | Medium | https://leetcode-cn.com/problems/increasing-triplet-subsequence/ |
-|                                                              |        |                                                              |
-|                                                              |        |                                                              |
-|                                                              |        |                                                              |
+| [354. 俄罗斯套娃信封问题](https://leetcode-cn.com/problems/russian-doll-envelopes/) | Hard   | https://leetcode-cn.com/problems/russian-doll-envelopes/     |
+| [368. 最大整除子集](https://leetcode-cn.com/problems/largest-divisible-subset/) | Medium | https://leetcode-cn.com/problems/largest-divisible-subset/   |
+| [413. 等差数列划分](https://leetcode-cn.com/problems/arithmetic-slices/) | Medium | https://leetcode-cn.com/problems/arithmetic-slices/          |
+| [446. 等差数列划分 II - 子序列](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/) | Hard   | https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/ |
 
 #### [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
 
@@ -2847,6 +2848,174 @@ class Solution(object):
 
 空间复杂度：$O(1)$
 
+#### [354. 俄罗斯套娃信封问题](https://leetcode-cn.com/problems/russian-doll-envelopes/)
+
+思路：按照第一维升序，第二维降序排序，直接转换成LIS问题
+
+这里有一个坑点，就是第二维需要降序，因为如果升序的话，会出现`[[1, 2], [1, 3]]`，`[1, 3]`套`[1, 2]`的情况，而降序的话完美的解决了这一问题。
+
+```python
+class Solution(object):
+    def maxEnvelopes(self, envelopes):
+        n = len(envelopes)
+        if n==1:
+            return 1
+        envelopes = sorted(envelopes, key=lambda x:(x[0], -x[1]))
+        dp = [0 for i in range(n)]
+        g = [float('inf') for i in range(n+1)]
+
+        dp[0] = 1
+        g[0] = float('-inf')
+
+        res = 0
+        for i in range(n):
+            clen = self.find(g, envelopes[i][1], i+1)
+            dp[i] = clen
+            g[clen] = min(envelopes[i][1], g[clen])
+            res = max(res, clen)
+        return res
+    
+    def find(self, arr, target, end):
+        i, j = 0, end
+        while i<j:
+            m = i + (j-i)//2
+            if arr[m]>=target:
+                j = m
+            else:
+                i = m + 1
+        return i
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+#### [368. 最大整除子集](https://leetcode-cn.com/problems/largest-divisible-subset/)
+
+排序后转换成最长整除序列，其本质是因为整除和递增一样具有传递性。
+
+```python
+class Solution(object):
+    def largestDivisibleSubset(self, nums):
+        n = len(nums)
+        nums = sorted(nums)
+
+        # dp[i]为以nums[i]为最大整数的子集大小
+        dp = [1 for i in range(n)]
+        # g[i]记录dp的转移情况
+        g = [-1 for i in range(n)]
+
+        for i in range(1, n):
+            maxn = 0
+            max_idx = -1
+            for j in range(i-1, -1, -1):              
+                if nums[i]%nums[j]==0:
+                    if dp[j]>maxn:
+                        maxn = dp[j]
+                        max_idx = j                  
+            dp[i] = maxn + 1
+            g[i] = max_idx
+
+        res = []
+        max_len = max(dp)
+        cur = dp.index(max_len)
+        for i in range(max_len):
+            res.append(nums[cur])
+            cur = g[cur]
+        return res
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+#### [413. 等差数列划分](https://leetcode-cn.com/problems/arithmetic-slices/)
+
+解法一：dp
+
+```python
+class Solution(object):
+    def numberOfArithmeticSlices(self, nums):
+        n = len(nums)
+        if n<3:
+            return 0
+        # dp[i]表示以nums[i]结尾的等差数列个数
+        dp = [0 for i in range(n)]
+
+        res = 0
+        for i in range(2, n):
+            if nums[i-1]*2 == nums[i-2]+nums[i]:
+                dp[i] = dp[i-1] + 1
+            res += dp[i]
+
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法二：
+
+长为3的等差数列贡献为1，长为4的贡献为1+2，长为5的贡献为1+2+3，以此类推
+
+```python
+class Solution(object):
+    def numberOfArithmeticSlices(self, nums):
+        n = len(nums)
+        if n<3:
+            return 0
+        
+        res, tmp = 0, 1
+        i = 2
+        while i<n:
+            if nums[i]+nums[i-2]==2*nums[i-1]:
+                res += tmp
+                tmp += 1
+            else:
+                tmp = 1
+            i+=1
+
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [446. 等差数列划分 II - 子序列](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/)
+
+
+
+### 数学
+
+#### [剑指 Offer 62. 圆圈中最后剩下的数字](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/) （约瑟夫环）
+
+f(n,m)在首轮删除了一个数后后变成了f(n-1, m)问题，只是初始位置发生了变化。
+
+```python
+class Solution(object):
+    def lastRemaining(self, n, m):
+        x = 0 # f(1)=0
+        for i in range(2, n+1):
+            x = (x+m)%i # f(n) = (f(n-1) + m) % n
+        return x
+```
+
+#### [390. 消除游戏](https://leetcode-cn.com/problems/elimination-game/)
+
+定义$f(n)$为从左到右删除后，从右到左的轮流删除，$f'(n)$为从右到左删除后，从左到右的轮流删除，分析可知两者对称，有$f(n)+f'(n) = n + 1$
+
+在$f(n)$进行一次从左到右删除后，数组变成$2, 4, ..., x$，再从右到左删除，等价于$f'(\frac n{2})*2$，除号均取下界。
+
+考虑以上两者，消除$f'(n)$后得到递推方程式$f(n) = 2(\frac n{2}+1-f(\frac n{2}))$
+
+```python
+class Solution(object):
+    def lastRemaining(self, n):
+        return 1 if n==1 else 2*(n//2+1-self.lastRemaining(n//2))
+```
+
 ## 排序
 
 ### 堆排
@@ -2923,6 +3092,8 @@ a|(1<<i) ，将第i为置为1
 a & (1<<i) ==0，a的第i位是否为1
 
 a & b == 0 ，a和b是否正交
+
+a & ((1<<b) -1)，只取a的低b位，即a & (2^b -1 ) 
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
@@ -3008,8 +3179,73 @@ class Solution(object):
 
 # 特定类型题
 ## 组合/排列
-## 子序列
 ## 字符串匹配
+
+### 字符串哈希
+
+| 题目                                                         | 难度   | 链接                                                     |
+| ------------------------------------------------------------ | ------ | -------------------------------------------------------- |
+| [187. 重复的DNA序列](https://leetcode-cn.com/problems/repeated-dna-sequences/) | Medium | https://leetcode-cn.com/problems/repeated-dna-sequences/ |
+|                                                              |        |                                                          |
+|                                                              |        |                                                          |
+
+#### [187. 重复的DNA序列](https://leetcode-cn.com/problems/repeated-dna-sequences/)
+
+解法一：滑动窗口+哈希表
+
+```python
+class Solution(object):
+    def findRepeatedDnaSequences(self, s):
+        n = len(s)
+        if n<10:
+            return []        
+        m = {}
+        res = []
+        for i in range(n-9):
+            cur = s[i:i+10]
+            if cur not in m:
+                m[cur] = 1
+            elif m[cur]==1:
+                res.append(cur)
+                m[cur]+=1             
+        return res
+```
+
+时间复杂度：$O(n*C)$,$C$为DNA序列长度。
+
+空间复杂度：$O(n*C)$，最差情况下每个序列都不相同，都要加入哈希表。
+
+解法二：位运算+哈希表+滑动窗口
+
+序列最长为10，并且只有ATCG四个符号，所以能用一个$2^{20}$的数字唯一的表示一个序列。
+
+```python
+class Solution(object):
+    def findRepeatedDnaSequences(self, s):
+        n = len(s)
+        if n<10:
+            return []
+
+        mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+        num = 0
+        for i in range(10):
+            num = (num<<2) | mapping[s[i]]
+
+        m = {num: 1}
+        res = []
+        for i in range(10, n):
+            num = (num<<2 | mapping[s[i]]) & ((1<<20)-1)
+            if num not in m:
+                m[num] = 1
+            elif m[num] == 1:
+                res.append(s[i-9:i+1])
+                m[num] += 1  
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 ## 二叉树路径和
 
