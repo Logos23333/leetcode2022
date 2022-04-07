@@ -2726,6 +2726,7 @@ class Solution(object):
 | [629. K个逆序对数组](https://leetcode-cn.com/problems/k-inverse-pairs-array/) | Hard   | https://leetcode-cn.com/problems/k-inverse-pairs-array/      |
 | [673. 最长递增子序列的个数](https://leetcode-cn.com/problems/number-of-longest-increasing-subsequence/) | Medium | https://leetcode-cn.com/problems/number-of-longest-increasing-subsequence/ |
 | [1218. 最长定差子序列](https://leetcode-cn.com/problems/longest-arithmetic-subsequence-of-given-difference/) | Medium | https://leetcode-cn.com/problems/longest-arithmetic-subsequence-of-given-difference/ |
+| [1713. 得到子序列的最少操作次数](https://leetcode-cn.com/problems/minimum-operations-to-make-a-subsequence/) | Hard   | https://leetcode-cn.com/problems/minimum-operations-to-make-a-subsequence/ |
 
 #### [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
 
@@ -3321,6 +3322,109 @@ class Solution(object):
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
+
+#### [1713. 得到子序列的最少操作次数](https://leetcode-cn.com/problems/minimum-operations-to-make-a-subsequence/)
+
+这题一眼LCS，但是LCS会超时，要利用题目的`target`元素各不相同，将其转换成LIS问题。
+
+```
+例：
+target = [6,4,8,1,3,2]
+arr = [4,7,6,2,3,8,6,1]
+
+原问题 ==》求：target和arr的最长公共子序列长度LCS
+最少操作次数 = target.length- lcs
+时间复杂度：O(n*m)，target.length, arr.length <= 10^5，无法通过
+
+由于target中的元素不重复，可将两个数组转成对应target的下标数组：
+target': 0,1,2,3,4,5
+arr': 1,0,5,4,2,0,3
+问题 ==》求：target'和arr'的最长公共子序列长度LCS
+
+由于target'是严格单调递增的
+问题 ==》求：arr'的最长递增子序列的长度LIS
+```
+
+所以这里有一个重要结论：如果LCS的序列之一不存在重复元素，可以直接转换成LIS。
+
+```python
+class Solution:
+    def minOperations(self, target: List[int], arr: List[int]) -> int:
+        m = len(target)
+        n = len(arr)
+
+        mapping = {}
+        for idx, num in enumerate(target):
+            mapping[num] = idx
+        
+        arr_ = []
+        for idx, num in enumerate(arr):
+            if num in mapping:
+                arr_.append(mapping[num])
+
+        if len(arr_)<=1:
+            return m-len(arr_)
+        lcs = self.LIS(arr_)
+        return m-lcs
+    
+    def LIS(self, arr):
+        n = len(arr)
+
+        # dp[i]表示以arr[i]结尾的最长递增子序列
+        dp = [0 for i in range(n)]
+        g = [float('inf') for i in range(n+1)]
+
+        dp[0] = 1
+        g[0], g[1] = float('-inf'), arr[0]
+
+        res = 0
+        for i in range(n):
+            clen = self.find(g, arr[i], i+1)
+            g[clen] = min(g[clen], arr[i])
+            dp[i] = clen
+            res = max(res, clen)
+        return res
+    
+    def find(self, arr, target, end):
+        l, r = 0, end
+        while l<r:
+            m = l+(r-l)//2
+            if arr[m]>=target:
+                r = m
+            else:
+                l = m+1
+        return l
+```
+
+时间复杂度：$O(m+nlogn)$
+
+空间复杂度：$O(m+n)$
+
+评论区还有一个简化版本：
+
+```python
+class Solution:
+    def minOperations(self, target: List[int], arr: List[int]) -> int:
+        m, n = len(target), len(arr)
+        num2idx = dict()
+        for i, num in enumerate(target):
+            num2idx[num] = i
+        sequence = []
+        
+        # 直接得到LIS
+        for num in arr:
+            if num in num2idx:
+                if not sequence or sequence[-1] < num2idx[num]:
+                    sequence.append(num2idx[num])
+                else:
+                    idx = bisect.bisect_left(sequence, num2idx[num]) # 直接求二分
+                    sequence[idx] = num2idx[num]
+        return m - len(sequence)
+```
+
+时间复杂度：$O(m+nlogn)$
+
+空间复杂度：$O(m+n)$
 
 ### 数学
 
