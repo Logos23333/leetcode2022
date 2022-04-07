@@ -2721,6 +2721,11 @@ class Solution(object):
 | [740. 删除并获得点数](https://leetcode-cn.com/problems/delete-and-earn/) | Medium | https://leetcode-cn.com/problems/delete-and-earn/            |
 | [978. 最长湍流子数组](https://leetcode-cn.com/problems/longest-turbulent-subarray/) | Medium | https://leetcode-cn.com/problems/longest-turbulent-subarray/ |
 | [1035. 不相交的线](https://leetcode-cn.com/problems/uncrossed-lines/) | Medium | https://leetcode-cn.com/problems/uncrossed-lines/            |
+| [583. 两个字符串的删除操作](https://leetcode-cn.com/problems/delete-operation-for-two-strings/) | Medium | https://leetcode-cn.com/problems/delete-operation-for-two-strings/ |
+| [72. 编辑距离](https://leetcode-cn.com/problems/edit-distance/) | Medium | https://leetcode-cn.com/problems/edit-distance/              |
+| [629. K个逆序对数组](https://leetcode-cn.com/problems/k-inverse-pairs-array/) | Hard   | https://leetcode-cn.com/problems/k-inverse-pairs-array/      |
+| [673. 最长递增子序列的个数](https://leetcode-cn.com/problems/number-of-longest-increasing-subsequence/) | Medium | https://leetcode-cn.com/problems/number-of-longest-increasing-subsequence/ |
+| [1218. 最长定差子序列](https://leetcode-cn.com/problems/longest-arithmetic-subsequence-of-given-difference/) | Medium | https://leetcode-cn.com/problems/longest-arithmetic-subsequence-of-given-difference/ |
 
 #### [300. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
 
@@ -3130,6 +3135,193 @@ class Solution:
 
 空间复杂度：$O(m*n)$
 
+#### [583. 两个字符串的删除操作](https://leetcode-cn.com/problems/delete-operation-for-two-strings/)
+
+```python
+class Solution(object):
+    def minDistance(self, word1, word2):
+        m = len(word1)
+        n = len(word2)
+
+        # dp[i][j]表示word1[:i]和word2[:j]的最小步数
+        dp = [[0 for i in range(n+1)] for i in range(m+1)]
+
+        # dp init
+        for i in range(m+1):
+            dp[i][0] = i
+        for j in range(n+1):
+            dp[0][j] = j
+
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if word1[i-1]==word2[j-1]:
+                    dp[i][j] = dp[i-1][j-1]
+                else:
+                    dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + 1
+        
+        return dp[m][n]
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+#### [72. 编辑距离](https://leetcode-cn.com/problems/edit-distance/)
+
+```python
+class Solution(object):
+    def minDistance(self, word1, word2):
+        m = len(word1)
+        n = len(word2)
+
+        # dp[i][j]表示word1[:i]和word2[:j]的编辑距离
+        dp = [[0 for i in range(n+1)] for i in range(m+1)]
+
+        # dp init
+        for i in range(m+1):
+            dp[i][0] = i
+        for j in range(n+1):
+            dp[0][j] = j
+
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if word1[i-1]==word2[j-1]:
+                    dp[i][j] = dp[i-1][j-1]
+                else:
+                    # 分别对应删除，插入，替换
+                    dp[i][j] = min(dp[i-1][j], min(dp[i][j-1], dp[i-1][j-1])) + 1
+        
+        return dp[m][n]
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+#### [629. K个逆序对数组](https://leetcode-cn.com/problems/k-inverse-pairs-array/)
+
+观察得知$dp[i][j] = \sum^{j}_{j-i+1}dp[i-1][x]$
+
+且有$dp[i][j-1] = \sum^{j-1}_{j-i}dp[i-1][x]$
+
+有$dp[i][j] = dp[i-1][j] + dp[i-][j-1] - dp[i-1][j-i]$
+
+（可参考完全背包递推公式的化简）
+
+```python
+class Solution(object):
+    def kInversePairs(self, n, k):
+        sumn = n*(n-1)//2
+        if k>sumn:
+            return 0
+        if k==0:
+            return 1
+        dp = [[0 for i in range(k+1)] for i in range(2)]
+        dp[1][0] = 1
+
+        for i in range(2, n+1):
+            for j in range(k+1):
+                if j==0:
+                    dp[i&1][j] = 1
+                else:
+                    dp[i&1][j] = dp[(i-1)&1][j] + dp[i&1][j-1]
+                    if j-i>=0:
+                        dp[i&1][j] -= dp[(i-1)&1][j-i]
+
+        mod = 1000000007
+        return dp[n&1][k]%mod
+```
+
+时间复杂度：$O(n*k)$
+
+空间复杂度：$O(k)$，可使用二维数组优化时间复杂度
+
+#### [673. 最长递增子序列的个数](https://leetcode-cn.com/problems/number-of-longest-increasing-subsequence/)
+
+```python
+class Solution(object):
+    def findNumberOfLIS(self, nums):
+        n = len(nums)
+        
+        # dp[i]是以nums[i]为结尾的最长递增子序列的个数
+        dp = [0 for i in range(n)]
+        # g[i]是以nums[i]为结尾的最长递增子序列的长度
+        g = [0 for i in range(n)]
+
+        dp[0], g[0] = 1, 1
+        for i in range(1, n):
+            dp[i] = g[i] = 1
+            for j in range(i):
+                if nums[j]<nums[i]:
+                    if g[i]<g[j]+1: #找到了新的最长长度，更新dp和g
+                        dp[i] = dp[j]
+                        g[i] = g[j] + 1
+                    elif g[i]==g[j]+1: # 找到了重复的最长长度 
+                        dp[i] += dp[j]
+        maxn = max(g)
+        res = 0
+        for i in range(n):
+            if g[i]==maxn:
+                res+=dp[i]      
+        return res
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+#### [1218. 最长定差子序列](https://leetcode-cn.com/problems/longest-arithmetic-subsequence-of-given-difference/)
+
+解法一：朴素dp
+
+```python
+class Solution(object):
+    def longestSubsequence(self, arr, difference):
+        n = len(arr)
+
+        # dp[i]表示以arr[i]结尾的最长等差子序列长度
+        dp = [0 for i in range(n)]
+        for i in range(n):
+            dp[i] = 1
+            for j in range(i):
+                diff = arr[i] - arr[j]
+                if diff == difference:
+                    dp[i] = max(dp[j] + 1, dp[i])
+        return max(dp)
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+解法二：dp+哈希表
+
+为什么这题能用哈希表，因为每次我们要找的值是确定的（$arr[i]-diff$)，所以直接查表即可。
+
+```python
+class Solution(object):
+    def longestSubsequence(self, arr, difference):
+        n = len(arr)
+
+        # dp[i]表示以arr[i]结尾的最长等差子序列长度
+        dp = [0 for i in range(n)]
+        m = {}
+        res = 0
+        for i in range(n):
+            dp[i] = 1
+            target = arr[i] - difference
+            if target in m:
+                j = m[target]
+                dp[i] = dp[j]+1
+            m[arr[i]] = i
+            res = max(res, dp[i])
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 ### 数学
 
 #### [剑指 Offer 62. 圆圈中最后剩下的数字](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/) （约瑟夫环）
@@ -3326,6 +3518,28 @@ class Solution(object):
 
 ### 字符串哈希
 
+字符串哈希模板：
+
+```python
+s = "AAAABBBBAAAA"
+n = len(s)
+
+P = 131313
+h = [0 for i in range(n+1)] # 保存字符串s的前缀哈希
+b = [0 for i in range(n+1)] # 保存次方值
+
+# 预处理，O(n)
+b[0] = 1
+for i in range(1, n+1):
+    h[i] = h[i-1]*P + ord(s[i-1])
+    b[i] = b[i-1]*P
+
+# 得到子串s[i:j]的哈希值
+def getHash(i, j):
+    x, y = i+1, j
+    return h[y] - h[x-1]*b[y-x+1]
+```
+
 | 题目                                                         | 难度   | 链接                                                     |
 | ------------------------------------------------------------ | ------ | -------------------------------------------------------- |
 | [187. 重复的DNA序列](https://leetcode-cn.com/problems/repeated-dna-sequences/) | Medium | https://leetcode-cn.com/problems/repeated-dna-sequences/ |
@@ -3383,6 +3597,44 @@ class Solution(object):
             elif m[num] == 1:
                 res.append(s[i-9:i+1])
                 m[num] += 1  
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法三：字符串哈希
+
+卡在了30/31
+
+```python
+class Solution(object):
+    def findRepeatedDnaSequences(self, s):
+        n = len(s)
+        if n<=10:
+            return [] 
+        
+        P = 131313
+        h = [0 for i in range(n+1)] # 保存字符串s的前缀哈希
+        b = [0 for i in range(n+1)] # 保存次方值
+
+        # 预处理，O(n)
+        b[0] = 1
+        for i in range(1, n+1):
+            h[i] = h[i-1]*P + ord(s[i-1])
+            b[i] = b[i-1]*P
+        
+        m = {}
+        res = []
+        for i in range(n-9):
+            x, y = i+1, i+10
+            h_v = h[y] - h[x-1]*b[y-x+1] # 计算s[i:j]的哈希值
+            if h_v not in m:
+                m[h_v] = 1
+            elif m[h_v] == 1:
+                res.append(s[i:i+10])
+                m[h_v] += 1
         return res
 ```
 
