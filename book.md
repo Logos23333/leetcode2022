@@ -1354,9 +1354,406 @@ while j<n:
 | [3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) | Medium | https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/ |
 | [209. 长度最小的子数组](https://leetcode-cn.com/problems/minimum-size-subarray-sum/) | Medium | https://leetcode-cn.com/problems/minimum-size-subarray-sum/  |
 
+#### [3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/)
 
+求最长子串，参考模板二
+
+```python
+class Solution(object):
+    def lengthOfLongestSubstring(self, s):
+        n = len(s)
+        i, j = 0, 0
+        mapping = {}
+        res = 0
+        while j<n:
+            while s[j] in mapping:
+                mapping.pop(s[i])
+                i += 1
+            mapping[s[j]] = True
+            res = max(res, j-i+1)
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [219. 存在重复元素 II](https://leetcode-cn.com/problems/contains-duplicate-ii/)
+
+解法一：哈希表查上一个出现的idx
+
+```
+class Solution(object):
+    def containsNearbyDuplicate(self, nums, k):
+        mapping = {}
+        n = len(nums)
+        for idx, num in enumerate(nums):
+            if num in mapping:
+                lst_idx = mapping[num]
+                if idx-lst_idx<=k:
+                    return True
+            mapping[num] = idx
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法二：滑动窗口+哈希表
+
+```python
+class Solution(object):
+    def containsNearbyDuplicate(self, nums, k):
+        mapping = {}
+        n = len(nums)
+        i, j = 0, 0
+        while j<n:
+            if j-i+1>k+1: # 注意这里的滑动窗口大小应该是k+1
+                mapping.pop(nums[i])
+                i+=1
+            if nums[j] in mapping:
+                return True
+            mapping[nums[j]] = True
+            j+=1
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(k)$
+
+#### [220. 存在重复元素 III](https://leetcode-cn.com/problems/contains-duplicate-iii/)
+
+思路：利用sortedList(红黑树实现)和二分查找滑动窗口中最接近nums[j]的值，并判断他们之差是否小于t。
+
+```python
+class Solution(object):
+    def containsNearbyAlmostDuplicate(self, nums, k, t):
+        from sortedcontainers import SortedList
+
+        n = len(nums)
+        i, j= 0, 0
+        window = SortedList()
+        while j<n:       
+            if j-i+1>k+1:
+                window.remove(nums[i])
+                i+=1
+            window.add(nums[j])
+            idx = bisect.bisect_left(window, nums[j])
+            if idx-1>=0 and window[idx]-window[idx-1]<=t:
+                return True
+            if idx+1<len(window) and window[idx+1]-window[idx]<=t:
+                return True       
+            j+=1
+        return False
+```
+
+时间复杂度：$O(nlogk)$
+
+空间复杂度：$O(k)$
+
+#### [424. 替换后的最长重复字符](https://leetcode-cn.com/problems/longest-repeating-character-replacement/)
+
+```python
+class Solution(object):
+    def characterReplacement(self, s, k):
+        n = len(s)
+
+        i, j = 0, 0
+        mapping = {} # 记录窗口中各个字符的出现次数
+        max_cnt = 0 # 记录窗口中出现次数最多的字符（的出现次数）
+        res = 0
+        while j<n:
+            mapping[s[j]] = mapping.get(s[j], 0) + 1
+            max_cnt = max(max_cnt, mapping[s[j]])
+            while max_cnt + k < j-i+1: # 不满足题意
+                mapping[s[i]] -= 1
+                for key in mapping.keys():
+                    max_cnt = max(max_cnt, mapping[key])
+                i+=1
+            
+            res = max(res, j-i+1)
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$，字符只有26个，哈希表可看作常数大小
+
+#### [209. 长度最小的子数组](https://leetcode-cn.com/problems/minimum-size-subarray-sum/)
+
+通过移动左界来寻找最小值
+
+```python
+class Solution(object):
+    def minSubArrayLen(self, target, nums):
+        n = len(nums)
+        i, j = 0, 0
+        total, res = 0, float('inf')
+        while j<n:
+            total += nums[j]
+            while total>=target:
+                res = min(res, j-i+1)
+                total -= nums[i]
+                i+=1
+            j+=1
+        return res if res!=float('inf') else 0
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [438. 找到字符串中所有字母异位词](https://leetcode-cn.com/problems/find-all-anagrams-in-a-string/)
+
+```python
+class Solution(object):
+    def findAnagrams(self, s, p):
+        m, n = len(s), len(p)
+        if m<n:
+            return []
+        target_map = defaultdict(int)
+        window_map = defaultdict(int)
+
+        for char in p:
+            target_map[char] += 1
+        
+        for char in s[:n]:
+            window_map[char] += 1
+
+        res = []
+        for i in range(m-n+1):
+            if target_map == window_map:
+                res.append(i)
+            if i<m-n:
+                window_map[s[i]]-=1
+                if window_map[s[i]]==0:
+                    window_map.pop(s[i])
+                window_map[s[i+n]]+=1 
+        return res
+```
+
+时间复杂度：$O(n + 26*(m-n))$
+
+空间复杂度：$O(1)$ or $O(26)$
+
+#### [480. 滑动窗口中位数](https://leetcode-cn.com/problems/sliding-window-median/)
+
+```python
+class Solution(object):
+    def medianSlidingWindow(self, nums, k):
+        from sortedcontainers import SortedList
+
+        window = SortedList()
+        n = len(nums)
+        m = k//2
+
+        for i in range(k):
+            window.add(nums[i])
+        
+        res = []
+        for i in range(n-k+1):
+            if k%2==0:     
+                res.append((window[m]+window[m-1])/2)
+            else:
+                res.append(window[m])
+            
+            if i+k<n:
+                window.remove(nums[i])
+                window.add(nums[i+k])
+        
+        return res
+```
+
+时间复杂度：$O(nlogk)$，红黑树的删除和插入操作是$O(logk)$
+
+空间复杂度：$O(k)$
+
+#### [567. 字符串的排列](https://leetcode-cn.com/problems/permutation-in-string/)
+
+```python
+class Solution:
+    def checkInclusion(self, s1: str, s2: str) -> bool:
+        m, n = len(s1), len(s2)
+        if m>n:
+            return False 
+        target_map = defaultdict(int)
+        window_map = defaultdict(int)
+
+        for char in s1:
+            target_map[char] += 1
+        
+        for char in s2[:m]:
+            window_map[char] += 1
+
+        res = []
+        for i in range(n-m+1):
+            if target_map == window_map:
+                return True
+            
+            if i<n-m:
+                window_map[s2[i]]-=1
+                if window_map[s2[i]]==0:
+                    window_map.pop(s2[i])
+                window_map[s2[i+m]]+=1 
+
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [594. 最长和谐子序列](https://leetcode-cn.com/problems/longest-harmonious-subsequence/)
+
+根据和谐子序列的定义，该序列必定只可能有两个值a和b，且b-a=1(假定b>a)。
+
+所以可以排序之后滑窗。
+
+```python
+class Solution:
+    def findLHS(self, nums: List[int]) -> int:
+        n = len(nums)
+        nums = sorted(nums)
+
+        i, j = 0, 0
+        res = 0
+        while j<n:
+            while nums[j]-nums[i]>1:
+                i+=1
+            
+            if nums[j]-nums[i]==1:
+                res = max(res, j-i+1)
+            
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [643. 子数组最大平均数 I](https://leetcode-cn.com/problems/maximum-average-subarray-i/)
+
+直接滑窗即可
+
+```python
+class Solution:
+    def findMaxAverage(self, nums: List[int], k: int) -> float:
+        n = len(nums)
+        sumn = sum(nums[:k])
+        res = float('-inf')
+        for i in range(n-k+1):
+            res = max(res, sumn)
+            
+            if i<n-k:
+                sumn-=nums[i]
+                sumn+=nums[i+k]
+        
+        return res/k
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：O(1)
+
+#### [992. K 个不同整数的子数组](https://leetcode-cn.com/problems/subarrays-with-k-different-integers/)
+
+```python
+class Solution:
+    def subarraysWithKDistinct(self, nums: List[int], k: int) -> int:
+        return self.find(nums, k) - self.find(nums, k-1)
+    
+    def find(self, nums, k):
+        # 返回值为最多存在k个不同整数的子区间个数
+        # 原问题不能直接滑窗，这个问题可以直接滑窗
+        n = len(nums)
+        mapping = defaultdict(int)
+        res = 0
+        i, j = 0, 0
+        while j<n:
+            mapping[nums[j]] += 1
+            while len(mapping)>k:
+                mapping[nums[i]] -= 1
+                if mapping[nums[i]]==0:
+                    mapping.pop(nums[i])
+                i+=1
+            res += (j-i)
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [1423. 可获得的最大点数](https://leetcode-cn.com/problems/maximum-points-you-can-obtain-from-cards/)
+
+将原问题转换成窗口大小为$n-k$的最小和问题
+
+```python
+class Solution:
+    def maxScore(self, cardPoints: List[int], k: int) -> int:
+        n = len(cardPoints)
+        window_size = n-k
+        total = sum(cardPoints[:n-k])
+        res = float('inf')
+        for i in range(k+1):
+            res = min(res, total)
+
+            if i<k:
+                total-=cardPoints[i]
+                total+=cardPoints[i+n-k]
+        
+        return sum(cardPoints) - res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [1610. 可见点的最大数目](https://leetcode-cn.com/problems/maximum-number-of-visible-points/)
+
+将points转换为极角之后滑动窗口
+
+```python
+class Solution:
+    def visiblePoints(self, points: List[List[int]], angle: int, location: List[int]) -> int:
+        sameCnt = 0
+        polarDegrees = [] # 存放points对location的极角
+        for p in points:
+            if p == location:
+                sameCnt += 1
+            else:
+                polarDegrees.append(atan2(p[1] - location[1], p[0] - location[0]))
+        polarDegrees.sort()
+
+        n = len(polarDegrees)
+        polarDegrees += [deg + 2 * pi for deg in polarDegrees] # 避免漏掉同时看到第一和第四象限的点
+        return sameCnt + self.sw(polarDegrees, angle*pi/180) # 主要要对angle进行转换
+
+    def sw(self, nums, k):
+        n = len(nums)
+        i, j = 0, 0
+        res = 0
+        while j<n:
+            while nums[j]-nums[i]>k:
+                i+=1
+            if nums[j]-nums[i]<=k:
+                res = max(res, j-i+1)
+            j+=1
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
 
 ## dfs
+
 ### 博弈论
 
 ### 状态压缩
