@@ -1752,6 +1752,49 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### [1984. 学生分数的最小差值](https://leetcode-cn.com/problems/minimum-difference-between-highest-and-lowest-of-k-scores/)
+
+```python
+class Solution:
+    def minimumDifference(self, nums: List[int], k: int) -> int:
+        nums = sorted(nums)
+        n = len(nums)
+        if n==1:
+            return 0
+        res = float('inf')
+        for i in range(n-k+1):
+            res = min(res, nums[i+k-1]-nums[i])
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(1)$
+
+#### [2024. 考试的最大困扰度](https://leetcode-cn.com/problems/maximize-the-confusion-of-an-exam/)
+
+```python
+class Solution:
+    def maxConsecutiveAnswers(self, answerKey: str, k: int) -> int:
+        n = len(answerKey)
+
+        i, j = 0, 0
+        m = defaultdict(int)
+        res = 0
+        while j<n:
+            m[answerKey[j]] += 1
+            while max(m['T'], m['F'])+k<j-i+1:
+                m[answerKey[i]] -= 1
+                i+=1
+            res = max(res, j-i+1)
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## dfs
 
 ### 博弈论
