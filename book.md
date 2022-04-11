@@ -1795,6 +1795,64 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [1438. 绝对差不超过限制的最长连续子数组](https://leetcode-cn.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/)
+
+解法一：使用sortedList
+
+```python
+class Solution:
+    def longestSubarray(self, nums: List[int], limit: int) -> int:
+        from sortedcontainers import SortedList
+
+        queue = SortedList()
+        n = len(nums)
+        i, j = 0, 0
+        res = float('-inf')
+        while j<n:
+            queue.add(nums[j])
+            while queue[-1]-queue[0]>limit:
+                queue.remove(nums[i])
+                i+=1
+            res = max(res, j-i+1)
+            j+=1
+        return res if res!=float('-inf') else 0
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+解法二：维护两个单调队列
+
+```python
+class Solution:
+    def longestSubarray(self, nums: List[int], limit: int) -> int:
+        n = len(nums)
+        maxn, minn = deque(), deque()
+        i, j = 0, 0
+        res = 0
+        while j<n:
+            while maxn and nums[j]>maxn[0]: # max为单调增队列
+                maxn.popleft()
+            maxn.appendleft(nums[j])
+            while minn and nums[j]<minn[0]: # min为单调减队列
+                minn.popleft()
+            minn.appendleft(nums[j])
+            while maxn and minn and maxn[-1]-minn[-1]>limit:
+                if maxn[-1]==nums[i]:
+                    maxn.pop()
+                if minn[-1]==nums[i]:
+                    minn.pop()
+                i+=1
+            res = max(res, j-i+1)
+            j+=1
+        return res 
+```
+
+时间复杂度：$O(n)$，单调队列最多需要增删$n$次。
+
+空间复杂度：$O(n)$
+
 ## dfs
 
 ### 博弈论
@@ -3894,6 +3952,27 @@ class Solution(object):
     def lastRemaining(self, n):
         return 1 if n==1 else 2*(n//2+1-self.lastRemaining(n//2))
 ```
+
+#### [357. 统计各位数字都不同的数字个数](https://leetcode-cn.com/problems/count-numbers-with-unique-digits/)
+
+```python
+class Solution:
+    def countNumbersWithUniqueDigits(self, n: int) -> int:
+        if n==0:
+            return 1
+        if n==1:
+            return 10
+        res, cur = 10, 9
+
+        for i in range(n-1):
+            cur*=(9-i)
+            res+=cur
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ## 排序
 
