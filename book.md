@@ -243,6 +243,78 @@ class Solution(object):
         return res
 ```
 
+#### [304. 二维区域和检索 - 矩阵不可变](https://leetcode-cn.com/problems/range-sum-query-2d-immutable/)
+
+```python
+class NumMatrix:
+
+    def __init__(self, matrix: List[List[int]]):
+        m, n = len(matrix), len(matrix[0])
+        self.prefix = [[0 for i in range(n+1)] for i in range(m+1)]
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                self.prefix[i][j] = matrix[i-1][j-1] + self.prefix[i-1][j] + self.prefix[i][j-1] - self.prefix[i-1][j-1]
+
+
+    def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
+        row1, col1, row2, col2 = row1+1, col1+1, row2+1, col2+1
+        return self.prefix[row2][col2] - self.prefix[row2][col1-1] - self.prefix[row1-1][col2] + self.prefix[row1-1][col1-1]
+```
+
+时间复杂度：$O(m*n)$，检索的时间复杂度为$O(1)$
+
+空间复杂度：$O(m*n)$
+
+#### [303. 区域和检索 - 数组不可变](https://leetcode-cn.com/problems/range-sum-query-immutable/)
+
+```python
+class NumArray:
+
+    def __init__(self, nums: List[int]):
+        n = len(nums)
+        self.prefix = [0 for i in range(n+1)]
+        for i in range(1, n+1):
+            self.prefix[i] = self.prefix[i-1] + nums[i-1]
+
+
+    def sumRange(self, left: int, right: int) -> int:
+        return self.prefix[right+1]-self.prefix[left]
+```
+
+时间复杂度：$O(n)$，检索的时间复杂度为$O(1)$
+
+空间复杂度：$O(n)$
+
+#### [523. 连续的子数组和](https://leetcode-cn.com/problems/continuous-subarray-sum/)
+
+这题有两个地方和普通前缀和不一样：
+
+1. 乍一看用不了前缀和，但分析可知要使得连续子数组和为k的倍数，就是使sum[j]和sum[i]余k相同
+2. 对连续子数组长度有要求，所以我们要保存最前方的值（旧值），而不是新值
+
+```python
+class Solution:
+    def checkSubarraySum(self, nums: List[int], k: int) -> bool:
+        n = len(nums)
+        mapping = {0:-1}
+        total = 0
+        for idx, num in enumerate(nums):
+            total += num
+            target = total%k
+            lst_idx = mapping.get(target, idx)
+            if lst_idx == idx:
+                mapping[target] = idx
+            elif idx-lst_idx>=2:
+                return True
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+
+
 ## 链表
 
 对于链表，我们需要知道它和数组相比的优点和缺点。
@@ -3703,7 +3775,7 @@ class Solution(object):
 
 且有$dp[i][j-1] = \sum^{j-1}_{j-i}dp[i-1][x]$
 
-有$dp[i][j] = dp[i-1][j] + dp[i-][j-1] - dp[i-1][j-i]$
+有$dp[i][j] = dp[i-1][j] + dp[i-1][j-1] - dp[i-1][j-i]$
 
 （可参考完全背包递推公式的化简）
 

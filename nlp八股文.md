@@ -168,6 +168,8 @@ BERT和transformer的目标不一致，bert是语言的预训练模型，需要�
 
 因为self-attention是位置无关的，无论句子的顺序是什么样的，通过self-attention计算的token的hidden embedding都是一样的，这显然不符合人类的思维。因此要有一个办法能够在模型中表达出一个token的位置信息，transformer使用了固定的positional encoding来表示token在句子中的绝对位置信息。作者们使用了不同频率的正弦和余弦函数来作为位置编码。
 
+参考：https://www.zhihu.com/question/347678607
+
 ### 你还了解什么关于位置编码的技术？各自的优缺点是什么？
 
 相对位置编码（RPE）
