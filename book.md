@@ -1925,6 +1925,44 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### [76. 最小覆盖子串](https://leetcode-cn.com/problems/minimum-window-substring/)
+
+```python
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        m, n = len(s), len(t)
+        target = defaultdict(int)
+        for char in t:
+            target[char] += 1
+        
+        def valid(cur, target):
+            for key in target.keys():
+                if cur.get(key, 0)<target[key]:
+                    return False
+            return True
+
+        i, j = 0, 0
+        cur = defaultdict(int)
+        min_cnt = float('inf')
+        res = ""
+        while j<m:
+            cur[s[j]] += 1
+            while valid(cur, target):
+                if j-i+1<min_cnt:
+                    res = s[i:j+1]
+                    min_cnt = j-i+1
+                cur[s[i]] -= 1
+                i+=1
+            j+=1
+        return res
+```
+
+时间复杂度：$O(n*k)$，$k$为t中不同字符的个数
+
+空间复杂度：$O(k)$
+
+
+
 ## dfs
 
 ### 博弈论
@@ -4209,6 +4247,162 @@ class Solution(object):
 
 # 特定类型题
 ## 组合/排列
+
+## 基本计算器
+
+#### [224. 基本计算器](https://leetcode-cn.com/problems/basic-calculator/)
+
+- 维护两个栈，nums和ops，分别用来保存数字和运算符
+- 遇到左括号时直接加进ops
+- 遇到右括号时，开始计算括号内的值（每次取出nums中的两个值和ops的一个运算符）并将结果加进nums
+- 遇到+-直接加进ops
+- 遇到数字，将连续数字加进nums
+
+```python
+class Solution:
+    def calculate(self, s: str) -> int:
+        s = s.replace(' ', '')
+        n = len(s)
+        nums = [0] # 处理第一个数为负数的情况
+        ops = []
+
+        def isdigit(char):
+            return ord(char)>=ord('0') and ord(char)<=ord('9')
+
+        idx = 0
+        while idx<n:
+            char = s[idx]
+            if char=='(':
+                # 左括号直接加
+                ops.append(char)
+            elif char==')':
+                while ops[-1]!='(':
+                    # 遇到右括号，开始计算括号内的值
+                    self.cal(nums, ops)
+                ops.pop() # pop出左括号
+            elif isdigit(char): # 数字
+                num = 0
+                while idx<n and isdigit(s[idx]):
+                    num = num*10 + int(s[idx])
+                    idx+=1
+                nums.append(num)
+                continue
+            else: # 运算符
+                if s[idx-1]=='(': # 处理(-1+2)这种情况，也就是第一个数字为负数
+                    nums.append(0)
+                while len(ops)>0 and ops[-1]!='(' and len(nums)>1:
+                    self.cal(nums, ops)
+                ops.append(char)
+            
+            idx+=1
+
+        while len(ops)>0 and len(nums)>1:
+            self.cal(nums, ops)
+        return nums[-1]
+    
+
+    def cal(self, nums, ops) -> None :
+        if len(nums)<2 or len(ops)<1 or ops[-1] in '()':
+            return
+        
+        num1 = nums.pop()
+        num2 = nums.pop()
+        op = ops.pop()
+
+        res = num2-num1 if op=='-' else num1+num2
+        nums.append(res)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [227. 基本计算器 II](https://leetcode-cn.com/problems/basic-calculator-ii/)
+
+只有当ops尾的运算符优先级大于当前时才进行运算
+
+```python
+class Solution:
+    def calculate(self, s: str) -> int:
+        op_map = {
+            '-': 1,
+            '+': 1,
+            '*': 2,
+            '/': 2,
+            '%': 3,
+            '^': 3
+        }
+    
+        def isdigit(char):
+            return ord(char)>=ord('0') and ord(char)<=ord('9')
+
+        s = s.replace(' ','')
+        s = s.replace('(+','(0+')
+        s = s.replace('(-', '(0-')
+
+        ops, nums = [], [0]
+        idx, n = 0, len(s)
+        while idx<n:
+            char = s[idx]
+            if char=='(':
+                ops.append(char)
+            elif char==')':
+                while len(ops)>0 and ops[-1]!='(':
+                    self.cal(nums, ops)
+                ops.pop()
+            elif isdigit(char):
+                num = 0
+                while idx<n and isdigit(s[idx]):
+                    num = num*10 + int(s[idx])
+                    idx+=1
+                nums.append(num)
+                continue
+            else:
+                while ops and op_map[ops[-1]]>=op_map[char]:
+                    self.cal(nums, ops)
+                ops.append(char)
+            
+            idx+=1
+        
+        while len(ops)>0 and len(nums)>1:
+            self.cal(nums, ops)
+        res = nums[-1]
+        if res<-1*(2**31):
+            res = -1*(2**31)
+        elif res>=1<<31:
+            res = (1<<31)-1
+        return res
+
+    def cal(self, nums, ops):
+        if len(nums)<2 or len(ops)<1 or ops[-1] in '()':
+            return
+        
+        num2 = nums.pop()
+        num1 = nums.pop()
+        op = ops.pop()
+        res = 0
+        if op=='+':
+            res = num1 + num2
+        elif op=='-':
+            res = num1 - num2
+        elif op=='*':
+            res = num1 * num2
+        elif op=='/':
+            res = num1//num2
+        elif op=='%':
+            res = num1%num2
+        elif op=='^':
+            res = num1**num2
+        nums.append(res)
+        return
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+
+
 ## 字符串匹配
 
 ### 字符串哈希
