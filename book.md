@@ -313,8 +313,6 @@ class Solution:
 
 空间复杂度：$O(n)$
 
-
-
 ## 链表
 
 对于链表，我们需要知道它和数组相比的优点和缺点。
@@ -380,7 +378,6 @@ class Solution(object):
         self.k = k
         dfs(root)
         return self.res
-            
 ```
 
 时间复杂度：$O(n)$。
@@ -678,8 +675,7 @@ class Solution:
         if not root:
             return False
 
-        def dfs(root, target):
-            
+        def dfs(root, target):         
             if not root.left and not root.right:
                 return target==root.val
             if root.left:
@@ -789,8 +785,6 @@ class Solution:
             
         dfs(root)
         return self.res
-
-
 ```
 
 时间复杂度：$O(n)$。每个节点都需要访问一次。
@@ -1152,6 +1146,8 @@ class Solution:
 
 #### [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
 
+对数组二分，直到target在有序数组中，再进行二分查找。
+
 ```python
 class Solution:
     def search(self, nums: List[int], target: int) -> int:     
@@ -1266,7 +1262,7 @@ class Solution:
             m = i + (j-i)//2
             if nums[m]>nums[j]: # 必定在右边，如[3,4,1,2]中的4或3
                 i=m+1
-            else: # 必定在左边，# 必定在右边，如[3,4,1,2]中的1或2
+            else: # 必定在左边，如[3,4,1,2]中的1或2
                 j=m             
         return nums[i]
 ```
@@ -1704,7 +1700,7 @@ class Solution:
         return res
 ```
 
-时间复杂度：$O(n)$
+时间复杂度：$O(nlogn)$
 
 空间复杂度：$O(1)$
 
@@ -1961,8 +1957,6 @@ class Solution:
 
 空间复杂度：$O(k)$
 
-
-
 ## dfs
 
 ### 博弈论
@@ -2202,7 +2196,7 @@ class Solution(object):
 
 #### [1289. 下降路径最小和  II](https://leetcode-cn.com/problems/minimum-falling-path-sum-ii/)
 
-用数组minn 存放 `min(dp[:i] + dp[i+1:])$,这样的好处是每次计算dp时非常方便。
+用数组minn 存放 $min(dp[:i] + dp[i+1:])$,这样的好处是每次计算dp时非常方便。
 
 ```python
 class Solution(object):
