@@ -160,6 +160,12 @@ BN是对每一批的数据在进入激活函数前进行归一化，可以提高
 
 Decoder有两层mha，encoder有一层mha，Decoder的第二层mha是为了转化输入与输出句长，Decoder的请求q与键k和数值v的倒数第二个维度可以不一样，但是encoder的qkv维度一样。
 
+> 两者的第一层` MHA 都是 self-attention。Decoder 的第二层是 cross-attention，目的是让 target 去 attend source。
+>
+> 至于维度，只是因为 tgt 和 src 长度不同而已。（假设 `batch_first=True`）Q/K/V 维度都是 (N, L, E)，其中 L 是 序列长度。 self-attention 是自己 attend 自己，所以 Q/K/V 对应的 L 都是 S=len(src) 或者 T=len(tgt)。cross-attention 是自己 attend 别人，所以 Q 的 L 是自己的 L，K/V 的 L 是别人的 L，即 cross-attention 的时候 Q.size()=(N, T, E), K.size()=(N, S, E), V.size()=(N, S, E)。
+> 
+> （LLJ 补充于 2022-04-21）
+
 ### bert的mask为何不学习transformer在attention处进行屏蔽score的技巧？
 
 BERT和transformer的目标不一致，bert是语言的预训练模型，需要充分考虑上下文的关系，而transformer主要考虑句子中第i个元素与前i-1个元素的关系。
@@ -201,6 +207,8 @@ $softmax(\frac{QK^{T}}{ \sqrt d_{k}})\cdot V$
 是为了打破对称性，参考其中“如果令Q=K，那么得到的模型大概率会得到一个类似单位矩阵的attention矩阵，**这样self-attention就退化成一个point-wise线性映射**。这样至少是违反了设计的初衷。”
 
 知乎 https://www.zhihu.com/question/319339652https://www.bilibili.com/read/cv4902832
+
+补充得到单位矩阵的原因：attention矩阵中元素 (i, j) 是向量 i 与向量 j 点乘后、softmax 后的结果。显然，加入所有向量长度相同，那么“自己点乘自己”肯定是比“自己点乘别人”要大的。
 
 ### 为什么要除以delta dk，dk的含义是？
 
