@@ -18,6 +18,10 @@ $\frac{\partial L}{\partial b} = \frac{1}{m}\sum^{m}_{i=1} (\hat y-y)$
 
 其中$m$为batch的大小
 
+### 手推逻辑回归的梯度
+
+$L = $
+
 ### ⭐手撕逻辑回归
 
 ```python
@@ -98,15 +102,136 @@ weight decay（权值衰减）的使用其最终目的是防止过拟合。在�
 
 ## 优化器
 
-SGD：更新比较频繁，会造成 cost function 有严重的震荡，最终停留在Local Minima或者Saddle Point处。
+### SGD
 
-SGD with Momentum： 提出了动量的概念，为了跳出局部最优。使用了一阶动量， 在梯度下降的过程中加入了惯性，使得梯度方向不变的维度上速度变快，梯度方向有所改变的维度上的更新速度变慢，这样就可以加快收敛并减小震荡。一句话：SGDM不仅考虑当前梯度，也考虑到了上个时间的梯度。
+$\theta_{t+1} = \theta_{t} - \eta*g_{t}$
 
-AdaGrad：  二阶动量为该维度上迄今为止所有梯度值的平方和。缺点：学习率会越来越小
+$g_{t}$为$t$时刻的梯度。
 
-RMSProp： 窗口滑动加权平均值计算二阶动量。
+更新比较频繁，会造成 cost function 有严重的震荡，最终停留在Local Minima或者Saddle Point处。
 
-Adam：一阶动量+窗口滑动二阶动量
+### SGD with Momentum
+
+$\theta_{t+1} = \theta_{t} - G_{t}$
+
+$G_{t} = \gamma*G_{t-1}+\eta * g_{t}$
+
+$G_{t-1}$为$t-1$时刻的下降的方向
+
+提出了动量的概念，为了跳出局部最优。使用了一阶动量， 在梯度下降的过程中加入了惯性，使得梯度方向不变的维度上速度变快，梯度方向有所改变的维度上的更新速度变慢，这样就可以加快收敛并减小震荡。一句话：SGDM不仅考虑当前梯度，也考虑到了上个时间的梯度。
+
+### AdaGrad
+
+  $\theta_{t+1} = \theta_{t} - G_{t}$
+
+$G_{t} = \frac \eta {\sqrt {v_{t} + \epsilon}}*g_{t}$
+
+$v_{t} = \sum_{i=1}^{t}g_{i}^{2}$
+
+二阶动量(即$v_{t}$)为该维度上迄今为止所有梯度值的平方和。缺点：学习率会越来越小
+
+### RMSProp
+
+ $\theta_{t+1} = \theta_{t} - G_{t}$
+
+$G_{t} = \frac \eta {\sqrt {v_{t} + \epsilon}}*g_{t}$
+
+$v_{t} = \gamma v_{t-1} + (1-\gamma)*g_{t}^{2}$
+
+同样是计算该维度迄今为止所有梯度值的平方和，但是时间越久影响力越低。
+
+窗口滑动加权平均值计算二阶动量。
+
+### Adam
+
+$\theta_{t+1} = \theta_{t} - G_{t}$
+
+$G_{t} = \frac \eta {\sqrt {\hat v_{t} + \epsilon}}*\hat m_{t}$
+
+$\hat m_{t} = \frac {m_{t}} {1-\gamma_{1}}$
+
+$\hat v_{t} = \frac {v_{t}} {1-\gamma_{2}}$
+
+$m_{t} = \gamma_{1}*m_{t-1}+(1-\gamma_{1}) * g_{t}$
+
+$v_{t} = \gamma_{2} v_{t-1} + (1-\gamma_{2})*g_{t}^{2}$
+
+一阶动量+窗口滑动二阶动量
+
+## dropout
+
+## 激活函数
+
+### 为什么要有激活函数？
+
+### 激活函数有哪些，各自的优缺点是什么？
+
+#### sigmoid函数
+
+$sigmoid(x) = \frac 1 { 1+e^{-x}}$
+
+![](https://pic2.zhimg.com/80/v2-83469109cd362f5fcf1decf109007fbd_1440w.png)
+
+优点：
+
+1. 平滑且易于求导
+
+缺点：
+
+1. 反向传播时导致梯度消失
+2. 幂运算相对耗时
+3. 输出值不以0为中心，可能会导致模型收敛速度慢
+
+#### tanh函数
+
+$tanh(x) = e^{x}-e^{-x}/{e^{x}+e^{-x}} $
+
+![](https://pic2.zhimg.com/80/v2-a39596b282f6333bced6e7bfbfe04dcd_1440w.png)
+
+特点：
+
+解决了sigmoid函数zero-centered的问题，但是梯度消失和幂运算问题仍然存在。
+
+#### Relu函数
+
+$Relu(x) = max(0, x)$
+
+![](https://pic3.zhimg.com/80/v2-5c97f377cdb5d1f0bc3faf23423c4952_1440w.png)
+
+优点：
+
+1. 求导快
+2. 解决了梯度消失的问题
+3. 收敛速度快
+
+缺点：
+
+1. 某些神经元可能永远不会被激活，梯度过大时会造成某些神经元死亡，当出现输出值恒小于0的时候，梯度永远为0，即参数不更新
+
+为了解决Dead Relu Problem，学者们提出了两种激活函数：
+
+#### **Leaky ReLU函数**
+
+$Leaky Relu(x) = max(0.01x, x)$
+
+![](https://pic1.zhimg.com/80/v2-8fa15614231fd01a659d4763beec9b24_1440w.png)
+
+#### **ELU (Exponential Linear Units) 函数**
+
+$f(x)  = x, if x>0$
+
+$f(x) = \alpha (e^{x} - 1), otherwise$
+
+![](https://pic2.zhimg.com/80/v2-604be114fa0478f3a1059923fd1022d1_1440w.png)
+
+### 为什么sigmoid函数反向传播会导致梯度消失？
+
+1. 当$x$较大时，sigmoid函数的导数会趋近于0
+2. Sigmoid导数的最大值是0.25，这意味着导数在每一层至少会被压缩为原来的1/4，通过两层后被变为1/16，…，通过10层后为1/1048576。
+
+### 为什么输出值不以0为中心时会导致模型收敛速度慢？
+
+如果参数全为正数或负数，那么激活函数对参数的导数也全为负或正，此时模型为了收敛，不得不走“Z”字形逼近最优解。
 
 ## boosting
 
@@ -119,6 +244,17 @@ boosting是一族可以将弱学习器提升为强学习器的算法，先从初
 ## 随机森林
 
 随机森林是Bagging算法的一个变种，它在以决策树为基学习器构建Bagging集成的基础上，进一步在决策树的训练过程引入了随机属性选择。跟dropput有着异曲同工之妙。
+
+# 词向量
+
+## word2vec
+
+### word2vec的词表如果很大的话，softmax如何优化？
+
+1. 分层softmax(哈夫曼编码树)，每一层都是一个二分类
+2. 负采样
+
+
 
 # transformer
 

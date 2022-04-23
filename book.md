@@ -344,6 +344,78 @@ class Solution:
 | [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/) | Easy   | https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/ |
 | [142. 环形链表 II](https://leetcode-cn.com/problems/linked-list-cycle-ii/) | Medium | https://leetcode-cn.com/problems/linked-list-cycle-ii/       |
 
+#### [148. 排序链表](https://leetcode-cn.com/problems/sort-list/)
+
+```python
+class Solution:
+    def sortList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head or not head.next:
+            return head
+        
+        # find mid
+        fast, slow = head.next, head
+        while fast and fast.next:
+            fast = fast.next.next
+            slow = slow.next
+
+        # cut
+        mid, slow.next = slow.next, None 
+        left, right = self.sortList(head), self.sortList(mid)
+
+        # merge
+        new_head = ListNode(-1)
+        p, p1, p2 = new_head, left, right
+        while p1 and p2:
+            if p1.val<p2.val:
+                p.next, p1 = p1, p1.next
+            else:
+                p.next, p2 = p2, p2.next
+            p = p.next
+        p.next = p1 if p1 else p2
+        return new_head.next
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(logn)$，递归的空间开销为$O(logn)$
+
+#### [160. 相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)
+
+```python
+class Solution:
+    def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
+        p1, p2 = headA, headB
+        while p1!=p2:
+            p1 = p1.next if p1 else headB
+            p2 = p2.next if p2 else headA
+        return p1
+```
+
+时间复杂度：$O(m+n)$
+
+空间复杂度：$O(1)$
+
+#### [206. 反转链表](https://leetcode-cn.com/problems/reverse-linked-list/)
+
+```python
+class Solution:
+    def reverseList(self, head: ListNode) -> ListNode:
+        cur = head
+        last = None
+        while cur:
+            tmp = cur.next
+            cur.next = last
+            last = cur
+            cur = tmp
+        return last
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+
+
 ## 二叉树
 
 ### 完全二叉树
@@ -489,6 +561,78 @@ class Solution(object):
 时间复杂度：$O(n)$，每个节点都需要访问一次。
 
 空间复杂度：$O(h)$，其中h为树的高度，也就是递归时栈的开销。
+
+#### [96. 不同的二叉搜索树](https://leetcode-cn.com/problems/unique-binary-search-trees/)
+
+一棵$n$个节点的二叉搜索树，在确定了根节点$i$之后，其左侧有$i-1$个节点，右侧有$n-i$个节点，则其排列方式共有
+
+$G(i) = G(i-1)*G(n-i)$种，每个节点都可以作为根节点，对其进行求和即可得到答案。
+
+```python
+class Solution:
+    def numTrees(self, n: int) -> int:
+        dp = [0 for i in range(max(n+1, 3))]
+        dp[0], dp[1], dp[2] = 1, 1, 2
+        for i in range(3, n+1):
+            for j in range(1, i+1):
+                dp[i] += dp[j-1]*dp[i-j]
+        return dp[n]
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(n)$
+
+#### [98. 验证二叉搜索树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
+
+```python
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:     
+        def dfs(root, cur_min, cur_max):
+            if not root:
+                return True
+            
+            if root.val<=cur_min or root.val>=cur_max:
+                return False
+
+            left_val = root.left.val if root.left else float('-inf')
+            right_val = root.right.val if root.right else float('inf')
+
+            return root.val>left_val and root.val<right_val and dfs(root.left, cur_min, root.val) and dfs(root.right, root.val, cur_max)
+        
+        return dfs(root, float('-inf'), float('inf'))
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+```python
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:     
+        def dfs(root):
+            if not root:
+                return
+            
+            dfs(root.left)
+            if root.val<=self.pre:
+                self.res = False
+                return
+            else:
+                self.pre = root.val
+            dfs(root.right)
+
+        self.pre = float('-inf')
+        self.res = True
+        dfs(root)
+        return self.res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+
 
 ### 遍历二叉树
 
@@ -648,6 +792,8 @@ class Codec:
 时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。
 
 空间复杂度：$O(n)$。
+
+
 
 ### 路径总和题
 
@@ -1024,7 +1170,24 @@ class Solution:
 
 ```
 
+#### [226. 翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)
 
+```python
+class Solution:
+    def invertTree(self, root: TreeNode) -> TreeNode:
+        def dfs(root):
+            if not root:
+                return None
+            
+            root.left, root.right = dfs(root.right), dfs(root.left)
+            return root
+        
+        return dfs(root)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(h)$
 
 ## 队列
 ## 栈
@@ -2442,6 +2605,76 @@ class Solution(object):
             return 0, 0
         mod = (10**9)+7
         return maxn[m-1][n-1]%mod, num[m-1][n-1]%mod
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+#### [329. 矩阵中的最长递增路径](https://leetcode-cn.com/problems/longest-increasing-path-in-a-matrix/)
+
+```python
+class Solution:
+    def longestIncreasingPath(self, matrix: List[List[int]]) -> int:
+        m, n = len(matrix), len(matrix[0])
+        memory = [[0 for i in range(n)] for i in range(m)]
+        def dfs(i, j):
+            if memory[i][j]!=0:
+                return memory[i][j]
+            
+            res = 1
+            if i+1<m and matrix[i+1][j]>matrix[i][j]:
+                res = max(res, 1 + dfs(i+1, j))
+            if j+1<n and matrix[i][j+1]>matrix[i][j]:
+                res = max(res, 1 + dfs(i, j+1))
+            if i-1>=0 and matrix[i-1][j]>matrix[i][j]:
+                res = max(res, 1 + dfs(i-1, j))
+            if j-1>=0 and matrix[i][j-1]>matrix[i][j]:
+                res = max(res, 1 + dfs(i, j-1))
+            
+            memory[i][j] = res
+            return res
+        
+        res = 1
+        for i in range(m):
+            for j in range(n):
+               res = max(res, dfs(i, j))
+        # print(memory)
+        return res 
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+#### [200. 岛屿数量](https://leetcode-cn.com/problems/number-of-islands/)
+
+```python
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+        m, n = len(grid), len(grid[0])
+
+        v = [[False for i in range(n)] for i in range(m)]
+        res = 0
+
+        def dfs(i, j):
+            v[i][j] = True
+            if i+1<m and grid[i+1][j]!='0' and not v[i+1][j]:
+                dfs(i+1, j)
+            if j+1<n and grid[i][j+1]!='0' and not v[i][j+1]:
+                dfs(i, j+1)
+            if i-1>=0 and grid[i-1][j]!='0' and not v[i-1][j]:
+                dfs(i-1, j)
+            if j-1>=0 and grid[i][j-1]!='0' and not v[i][j-1]:
+                dfs(i, j-1)
+
+        for i in range(m):
+            for j in range(n):
+                if v[i][j] or grid[i][j]=='0':
+                    continue     
+                res+=1         
+                dfs(i, j)
+        return res
 ```
 
 时间复杂度：$O(m*n)$
@@ -4028,6 +4261,61 @@ class Solution:
 
 空间复杂度：$O(m+n)$
 
+### 其它
+
+#### [396. 旋转函数](https://leetcode-cn.com/problems/rotate-function/)
+
+观察到$dp[0] = 0*nums[0] +...+(n-1)*nums[n-1]$
+
+$dp[1] = 1*nums[0]+...+(n-1)*nums[n-2]+0*nums[n-1]$
+
+$dp[n] = dp[n-1] + sum - n*nums[n-k]$
+
+```python
+class Solution:
+    def maxRotateFunction(self, nums: List[int]) -> int:
+        n = len(nums)
+        numSum = sum(nums)
+        cur = 0
+        for idx, num in enumerate(nums):
+            cur+=idx*num
+        res = cur # dp[0]
+        for i in range(n-1, 0, -1): # 由dp[0]到dp[n]
+            cur += numSum-n*nums[i]
+            res = max(res, cur)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [221. 最大正方形](https://leetcode-cn.com/problems/maximal-square/)
+
+```python
+class Solution:
+    def maximalSquare(self, matrix: List[List[str]]) -> int:
+        m, n = len(matrix), len(matrix[0])
+
+        dp = [[0 for i in range(n)] for i in range(m)]
+        res = 0
+        for i in range(m):
+            for j in range(n):
+                if i==0 or j==0:
+                    dp[i][j] = 1 if matrix[i][j]=='1' else 0
+                elif matrix[i][j]=='1':
+                    dp[i][j] = min(dp[i-1][j], min(dp[i-1][j-1], dp[i][j-1])) + 1
+                res = max(res, dp[i][j])
+        
+        return res*res
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(m*n)$
+
+
+
 ### 数学
 
 #### [剑指 Offer 62. 圆圈中最后剩下的数字](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/) （约瑟夫环）
@@ -4237,9 +4525,114 @@ class Solution(object):
         return res if flag else -1*res
 ```
 
+## 图论
 
+### 拓扑排序
+
+#### [207. 课程表](https://leetcode-cn.com/problems/course-schedule/)
+
+解法一：dfs
+
+```python
+class Solution:
+    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+        def dfs(i, adj, flags):
+            if flags[i]==1: # 成环
+                return False
+            if flags[i]==-1: # 已访问过，避免重复搜索
+                return True
+            
+            flags[i] = 1
+            for j in adj[i]: 
+                if not dfs(j, adj, flags):
+                    return False
+            flags[i] = -1
+            return True 
+        
+        adj = [[] for _ in range(numCourses)]
+        flags = [0 for _ in range(numCourses)]
+
+        for cur, pre in prerequisites: # 构建邻接表
+            adj[pre].append(cur)
+        
+        for i in range(numCourses): # 每个节点都不成环才为True
+            if not dfs(i, adj, flags):
+                return False
+        return True
+```
+
+时间复杂度：$O(m+n)$，分别为建表和搜索所需时间
+
+空间复杂度：$O(m+n)$
+
+解法二：利用入度的拓扑排序
+
+```python
+class Solution:
+    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+        adj = [[] for _ in range(numCourses)]
+        in_edges = [0 for _ in range(numCourses)]
+
+        for cur, pre in prerequisites:
+            adj[pre].append(cur)
+            in_edges[cur] += 1
+		
+        # 将入度为0的结点放进队列
+        queue = deque([edge for edge in range(numCourses) if in_edges[edge]==0])
+
+        cnt = 0
+        while queue:
+            cnt+=1
+            cur = queue.popleft()
+            for node in adj[cur]:
+                in_edges[node] -= 1
+                if in_edges[node] == 0:
+                    queue.append(node)
+        
+        return cnt==numCourses
+```
+
+时间复杂度：$O(m+n)$，分别为建表和搜索所需时间
+
+空间复杂度：$O(m+n)$
 
 # 特定类型题
+
+## 数据结构题
+
+#### [155. 最小栈](https://leetcode-cn.com/problems/min-stack/)
+
+```python
+import heapq
+class MinStack:
+
+    def __init__(self):
+        self.stack = []
+        self.min_stack = [float('inf')]
+
+
+    def push(self, val: int) -> None:
+        self.stack.append(val)
+        self.min_stack.append(min(self.min_stack[-1], val))
+
+
+    def pop(self) -> None:
+        self.stack.pop()
+        self.min_stack.pop()
+
+
+    def top(self) -> int:
+        return self.stack[-1]
+
+
+    def getMin(self) -> int:
+        return self.min_stack[-1]
+```
+
+时间复杂度：$O(1)$
+
+空间复杂度：$O(n)$
+
 ## 组合/排列
 
 ## 基本计算器
@@ -4524,6 +4917,29 @@ class Solution(object):
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
+
+## 其它
+
+#### [169. 多数元素](https://leetcode-cn.com/problems/majority-element/)
+
+```python
+class Solution:
+    def majorityElement(self, nums: List[int]) -> int:
+        candidate = None
+        cnt = 0
+        for idx, num in enumerate(nums):
+            if cnt==0:
+                candidate = num
+                cnt = 1           
+            elif num==candidate:
+                cnt+=1
+            else:
+                cnt-=1
+        
+        return candidate
+```
+
+
 
 ## 二叉树路径和
 
