@@ -1189,6 +1189,8 @@ class Solution:
 
 空间复杂度：$O(h)$
 
+
+
 ## 队列
 ## 栈
 ### 单调栈
@@ -4597,6 +4599,50 @@ class Solution:
 空间复杂度：$O(m+n)$
 
 # 特定类型题
+
+## 蓄水池抽样
+
+#### [382. 链表随机节点](https://leetcode-cn.com/problems/linked-list-random-node/)
+
+```python
+    def __init__(self, head: Optional[ListNode]):
+        self.head = head
+
+    def getRandom(self) -> int:
+        cur, i, ans = self.head, 1, self.head.val
+        while cur:
+            if random.randint(0, i-1)==0:
+                ans = cur.val
+            i+=1
+            cur = cur.next
+        return ans
+```
+
+时间复杂度：初始化为$O(1)$，getRandom为$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [398. 随机数索引](https://leetcode-cn.com/problems/random-pick-index/)
+
+```python
+class Solution:
+
+    def __init__(self, nums: List[int]):
+        self.nums = nums
+
+    def pick(self, target: int) -> int:
+        cnt, res = 0, 0
+        for idx, num in enumerate(self.nums):
+            if num==target:
+                if randint(0, cnt)==0:
+                    res = idx
+                cnt+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ## 数据结构题
 
