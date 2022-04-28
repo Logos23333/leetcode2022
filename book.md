@@ -1540,6 +1540,31 @@ class Solution:
 空间复杂度：$O(1)$
 
 ## 双指针
+
+#### [905. 按奇偶排序数组](https://leetcode-cn.com/problems/sort-array-by-parity/)
+
+```python
+class Solution:
+    def sortArrayByParity(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        i, j = 0, n-1
+        while i<j:
+            if nums[i]%2==0:
+                i+=1
+            elif nums[j]%2!=0:
+                j-=1
+            elif nums[i]%2!=0 and nums[j]%2==0:
+                nums[i], nums[j] = nums[j], nums[i]
+                i+=1
+                j-=1
+
+        return nums
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## 滑动窗口
 
 滑动窗口可以分为变长滑动窗口和固定窗口大小的滑动窗口。
