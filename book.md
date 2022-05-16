@@ -247,14 +247,12 @@ class Solution(object):
 
 ```python
 class NumMatrix:
-
     def __init__(self, matrix: List[List[int]]):
         m, n = len(matrix), len(matrix[0])
         self.prefix = [[0 for i in range(n+1)] for i in range(m+1)]
         for i in range(1, m+1):
             for j in range(1, n+1):
                 self.prefix[i][j] = matrix[i-1][j-1] + self.prefix[i-1][j] + self.prefix[i][j-1] - self.prefix[i-1][j-1]
-
 
     def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
         row1, col1, row2, col2 = row1+1, col1+1, row2+1, col2+1
@@ -674,6 +672,51 @@ class Solution:
 时间复杂度：$O(m+n)$
 
 空间复杂度：$O(m+n)$
+
+#### [面试题 04.06. 后继者](https://leetcode.cn/problems/successor-lcci/)
+
+解法一：二叉树中序遍历
+
+```python
+class Solution:
+    def inorderSuccessor(self, root: TreeNode, p: TreeNode) -> TreeNode:
+        self.last = None
+        self.res = None
+        def dfs(node):
+            if not node:
+                return
+            dfs(node.left)
+            if self.last==p:
+                self.res=node
+                self.last=node
+                return
+            self.last = node
+            dfs(node.right)
+        dfs(root)
+        return self.res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+解法二：用二叉搜索树的性质求解
+
+```python
+class Solution:
+    def inorderSuccessor(self, root: TreeNode, p: TreeNode) -> TreeNode:
+        def dfs(root, p):
+            if not root: return
+            if root.val<=p.val: return dfs(root.right, p) # 一定在root右子树
+            res = dfs(root.left, p) # 一定在root左子树或者root
+            return res if res else root
+
+        return dfs(root, p)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ### 遍历二叉树
 
@@ -5193,6 +5236,34 @@ class Solution(object):
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
+
+#### [472. 连接词](https://leetcode.cn/problems/concatenated-words/)
+
+解法一：dfs
+
+```python
+class Solution:
+    def findAllConcatenatedWordsInADict(self, words: List[str]) -> List[str]:
+        if words == [""]: 
+            return []
+        words = set(words)
+        if '' in words:
+            words.remove("")
+
+        def dfs(word):
+            for i in range(len(word)):
+                if word[:i] in words and (word[i:] in words or dfs(word[i:])):
+                    return True 
+            return False
+
+        res = []
+        for word in words:
+            if dfs(word):
+                res.append(word)    
+        return res
+```
+
+时间复杂度：
 
 ## 其它
 
