@@ -247,12 +247,14 @@ class Solution(object):
 
 ```python
 class NumMatrix:
+
     def __init__(self, matrix: List[List[int]]):
         m, n = len(matrix), len(matrix[0])
         self.prefix = [[0 for i in range(n+1)] for i in range(m+1)]
         for i in range(1, m+1):
             for j in range(1, n+1):
                 self.prefix[i][j] = matrix[i-1][j-1] + self.prefix[i-1][j] + self.prefix[i][j-1] - self.prefix[i-1][j-1]
+
 
     def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
         row1, col1, row2, col2 = row1+1, col1+1, row2+1, col2+1
@@ -630,93 +632,7 @@ class Solution:
 
 空间复杂度：$O(n)$
 
-#### [1305. 两棵二叉搜索树中的所有元素](https://leetcode-cn.com/problems/all-elements-in-two-binary-search-trees/)
 
-```python
-class Solution:
-    def getAllElements(self, root1: TreeNode, root2: TreeNode) -> List[int]:
-        arr1 = self.getList(root1) # O(m)
-        arr2 = self.getList(root2) # O(n)
-        return self.merge(arr1, arr2) # O(m+n)
-    
-    def getList(self, root):
-        res = []
-        def dfs(root):
-            if not root:
-                return
-            dfs(root.left)
-            res.append(root.val)
-            dfs(root.right)
-        
-        dfs(root)
-        return res
-    
-    def merge(self, arr1, arr2):
-        if not arr1 or not arr2:
-            return arr1+arr2
-        # 合并两个升序数组
-        arr = []
-        m, n, i, j = len(arr1), len(arr2), 0, 0
-        while i<m and j<n:
-            if arr1[i]<arr2[j]:
-                arr.append(arr1[i])
-                i+=1
-            else:
-                arr.append(arr2[j])
-                j+=1
-        
-        arr += arr1[i:] if j==n else arr2[j:]
-        return arr
-```
-
-时间复杂度：$O(m+n)$
-
-空间复杂度：$O(m+n)$
-
-#### [面试题 04.06. 后继者](https://leetcode.cn/problems/successor-lcci/)
-
-解法一：二叉树中序遍历
-
-```python
-class Solution:
-    def inorderSuccessor(self, root: TreeNode, p: TreeNode) -> TreeNode:
-        self.last = None
-        self.res = None
-        def dfs(node):
-            if not node:
-                return
-            dfs(node.left)
-            if self.last==p:
-                self.res=node
-                self.last=node
-                return
-            self.last = node
-            dfs(node.right)
-        dfs(root)
-        return self.res
-```
-
-时间复杂度：$O(n)$
-
-空间复杂度：$O(1)$
-
-解法二：用二叉搜索树的性质求解
-
-```python
-class Solution:
-    def inorderSuccessor(self, root: TreeNode, p: TreeNode) -> TreeNode:
-        def dfs(root, p):
-            if not root: return
-            if root.val<=p.val: return dfs(root.right, p) # 一定在root右子树
-            res = dfs(root.left, p) # 一定在root左子树或者root
-            return res if res else root
-
-        return dfs(root, p)
-```
-
-时间复杂度：$O(n)$
-
-空间复杂度：$O(1)$
 
 ### 遍历二叉树
 
@@ -1273,8 +1189,6 @@ class Solution:
 
 空间复杂度：$O(h)$
 
-
-
 ## 队列
 ## 栈
 ### 单调栈
@@ -1623,32 +1537,37 @@ class Solution:
 
 空间复杂度：$O(1)$
 
-## 双指针
-
-#### [905. 按奇偶排序数组](https://leetcode-cn.com/problems/sort-array-by-parity/)
+#### [436. 寻找右区间](https://leetcode.cn/problems/find-right-interval/)
 
 ```python
 class Solution:
-    def sortArrayByParity(self, nums: List[int]) -> List[int]:
-        n = len(nums)
-        i, j = 0, n-1
-        while i<j:
-            if nums[i]%2==0:
-                i+=1
-            elif nums[j]%2!=0:
-                j-=1
-            elif nums[i]%2!=0 and nums[j]%2==0:
-                nums[i], nums[j] = nums[j], nums[i]
-                i+=1
-                j-=1
+    def findRightInterval(self, intervals: List[List[int]]) -> List[int]:
+        mapping = {interval[0]:idx for idx, interval in enumerate(intervals)}
+        starts = sorted(list(mapping.keys()))
 
-        return nums
+        def find(arr, start, end, target):
+            i, j = start, end
+            while i<j:
+                m = i+(j-i)//2
+                if arr[m]>=target:
+                    j = m
+                else:
+                    i = m + 1
+            return i
+        
+        n = len(intervals)
+        res = [-1 for _ in range(n)]
+        for idx, interval in enumerate(intervals):
+            right = find(starts, 0, n, interval[1])
+            res[idx] = -1 if right>=n else mapping[starts[right]]
+        return res
 ```
 
-时间复杂度：$O(n)$
+时间复杂度：$O(nlogn)$
 
-空间复杂度：$O(1)$
+空间复杂度：$O(n)$
 
+## 双指针
 ## 滑动窗口
 
 滑动窗口可以分为变长滑动窗口和固定窗口大小的滑动窗口。
@@ -2235,6 +2154,40 @@ class Solution:
 
 ### 博弈论
 
+#### [464. 我能赢吗](https://leetcode.cn/problems/can-i-win/)
+
+状态压缩+博弈论
+
+```python
+class Solution:
+    def canIWin(self, maxChoosableInteger: int, desiredTotal: int) -> bool:
+        if desiredTotal<=1:
+            return True
+            
+        m = defaultdict(bool)
+        def dfs(state, sumn):
+
+            if state in m:
+                return m[state]
+            
+            for i in range(maxChoosableInteger):
+                num = i+1               
+                cur = 1<<i
+                if state & cur:
+                    continue
+                if sumn+num>=desiredTotal or not dfs(state|cur, sumn+num):
+                    m[state] = True
+                    return True
+
+            m[state] = False
+            return False
+        return (1+maxChoosableInteger)*maxChoosableInteger//2>=desiredTotal and dfs(0, 0)
+```
+
+时间复杂度：$O(2^{n}*n)$，总共要搜索的状态是子集个数$2^{n}$，每次搜索要遍历n个数字
+
+空间复杂度：$O(2^{n})$，记忆化搜索需要的空间记忆。
+
 ### 状态压缩
 
 从数组里不放回的取出元素遍历，如何表示数组的当前状态state？
@@ -2649,6 +2602,8 @@ class Solution(object):
             if maxn==left_max:
                 cur_num+=left_num
             if maxn==up_max:
+                cur_num+=up_num
+            if maxn==ul_max:
                 cur_num+=ul_num
 
             maxn = maxn + int(board[i][j]) if board[i][j]!='S' else maxn
@@ -3377,20 +3332,22 @@ class Solution(object):
         
         m = len(group) # 总共的工作数
         # dp[i][j][k]表示有前i个工作可以选，有j名员工,产生利润k的计划数
-        dp = [[0 for i in range(max_profit+1)] for i in range(n+1)]
+        dp = [[[0 for i in range(max_profit+1)] for i in range(n+1)] for i in range(m)]
 
         for i in range(n+1):
             for j in range(max_profit+1):
-                dp[i][j] = 1 if (group[0]<=i and profit[0]==j) or j==0 else 0
+                dp[0][i][j] = 1 if (group[0]<=i and profit[0]==j) or j==0 else 0
         for i in range(1, m):
             p = profit[i]
             g = group[i]
-            for j in range(n, g-1, -1):
-                for k in range(max_profit, p-1, -1):                   
-                    dp[j][k] += dp[j-g][k-p]
+            for j in range(n+1):
+                for k in range(max_profit+1):                   
+                    dp[i][j][k] += dp[i-1][j][k]
+                    if j>=g and k>=p:
+                        dp[i][j][k] += dp[i-1][j-g][k-p]
         res = 0
         for i in range(minProfit, max_profit+1): # 求满足题意利润的所有方案数
-            res += dp[n][i]
+            res += dp[m-1][n][i]
         return res%((10**9)+7)
     
     def cal(self, group, profit, n):
@@ -3411,37 +3368,12 @@ class Solution(object):
                 cur = max(cur, dp[j]) # 不装进背包
                 dp[j] = cur
         return dp[n]
+        
 ```
 
 时间复杂度：$O(maxProfit*m*n)$，$maxProfit$为最大利润数
 
 空间复杂度：$O(maxProfit*m*n)$
-
-解法二：
-
-```python
-class Solution:
-    def profitableSchemes(self, n: int, minProfit: int, group: List[int], profit: List[int]) -> int:
-        m = len(group)
-
-        # dp[i][j][k]表示前i个工作有n个员工可参与产生的利润为至少为k的工作数
-        dp = [[0 for _ in range(minProfit+1)] for _ in range(n+1)]
-        
-        for j in range(n+1):
-            dp[j][0] = 1
-
-        for i in range(1, m+1):
-            w, v = group[i-1], profit[i-1]
-            for j in range(n, w-1, -1):
-                for k in range(minProfit, -1, -1):
-                    dp[j][k] += dp[j-w][max(k-v, 0)]
-        
-        return dp[n][minProfit]%((10**9)+7)
-```
-
-时间复杂度：$O(minProfit*m*n)$
-
-空间复杂度：$O(minProfit*m*n)$
 
 #### [494. 目标和](https://leetcode-cn.com/problems/target-sum/)
 
@@ -3575,78 +3507,6 @@ class Solution(object):
 
 空间复杂度: $O(\sum stones[i]/2)$
 
-#### [1751. 最多可以参加的会议数目 II](https://leetcode.cn/problems/maximum-number-of-events-that-can-be-attended-ii/)
-
-解法一：朴素dp
-
-```python
-class Solution:
-    def maxValue(self, events: List[List[int]], k: int) -> int:
-        n = len(events)
-        events = sorted(events, key=lambda x:x[1])
- 
-        # 前i个会议，不超过k个会议的最大价值
-        dp = [[0 for i in range(k+1)] for i in range(n+1)]
-        
-        for i in range(1, n+1):
-            # 找到结束时间小于等于当前会议开始时间的最近会议
-            start = events[i-1][0]
-            end = events[i-1][1]
-            value = events[i-1][2]
-
-            target = 0
-            for j in range(i-1, 0, -1): # 从右往左找
-                if events[j-1][1]<start:
-                    target = j
-                    break
-
-            for j in range(1, k+1):
-                dp[i][j] = max(dp[i-1][j], dp[target][j-1] + value)
-
-        return dp[n][k]
-```
-
-时间复杂度：$O(n*(logn+k+n)$
-
-空间复杂度：$O(n*k)$
-
-解法二：二分
-
-```python
-class Solution:
-    def maxValue(self, events: List[List[int]], k: int) -> int:
-        n = len(events)
-        events = sorted(events, key=lambda x:x[1])
- 
-        # 前i个会议，不超过k个会议的最大价值
-        dp = [[0 for i in range(k+1)] for i in range(n+1)]
-        
-        for i in range(1, n+1):
-            # 找到结束时间小于等于当前会议开始时间的最近会议
-            start = events[i-1][0]
-            end = events[i-1][1]
-            value = events[i-1][2]
-
-            # 找到小于start的上界，即大于等于start的下界-1
-            l, r = 1, i
-            while l<r:
-                m = l+(r-l)//2
-                if events[m-1][1]>=start:
-                    r = m
-                else:
-                    l = m+1
-            target = l-1
-
-            for j in range(1, k+1):
-                dp[i][j] = max(dp[i-1][j], dp[target][j-1] + value)
-
-        return dp[n][k]
-```
-
-时间复杂度：$O(n*(logn+k)$
-
-空间复杂度：$O(n*k)$
-
 ### LCS和LIS问题
 
 [宫水三叶:LCS 问题与 LIS 问题的相互关系，以及 LIS 问题的最优解证明](https://mp.weixin.qq.com/s?__biz=MzU4NDE3MTEyMA==&mid=2247487814&idx=1&sn=e33023c2d474ff75af83eda1c4d01892&chksm=fd9cba59caeb334f1fbfa1aefd3d9b2ab6abfccfcab8cb1dbff93191ae9b787e1b4681bbbde3&token=252055586&lang=zh_CN#rd)
@@ -3704,13 +3564,13 @@ def solution(nums):
                 i = m+1
         return i
 
-    res = 0
-    for i in range(1, n):
-        lst_len = find(g, nums[i], i+1) # O(logn)
-        dp[i] = lst_len
-        g[lst_len] = min(nums[i], g[lst_len]) # 更新g数组
-        res = max(res, dp[i])
-    return res
+        res = 0
+        for i in range(1, n):
+            lst_len = find(g, nums[i], i+1) # O(logn)
+            dp[i] = lst_len
+            g[lst_len] = min(nums[i], g[lst_len]) # 更新g数组
+            res = max(res, dp[i])
+        return res
 ```
 
 时间复杂度：$O(nlogn)$
@@ -4570,23 +4430,6 @@ class Solution:
 
 空间复杂度：$O(1)$
 
-#### [1823. 找出游戏的获胜者](https://leetcode-cn.com/problems/find-the-winner-of-the-circular-game/)
-
-这题和剑指的约瑟夫环问题的唯一区别就是，这题的编号从1开始，而剑指那题从0开始。
-
-```python
-class Solution:
-    def findTheWinner(self, n: int, k: int) -> int:
-        x = 0
-        for i in range(2, n+1):
-            x = (x+k)%i
-        return x+1
-```
-
-时间复杂度：$O(n)$
-
-空间复杂度：$O(1)$
-
 ## 排序
 
 ### 堆排
@@ -4817,105 +4660,7 @@ class Solution:
 
 空间复杂度：$O(m+n)$
 
-### BFS
-
-#### [433. 最小基因变化](https://leetcode-cn.com/problems/minimum-genetic-mutation/)
-
-```python
-class Solution:
-    def minMutation(self, start: str, end: str, bank: List[str]) -> int:
-        # 处理边界条件
-        if start == end:
-            return 0
-        if end not in bank:
-            return -1
-
-        n = len(bank)
-        bank = [start] + bank + [end]
-        
-        # 预处理得到邻接表
-        adj = [[] for _ in range(n+2)]
-        def diffOne(str1, str2):
-            return sum(x != y for x, y in zip(str1, str2))==1
-
-        for i, i_s in enumerate(bank):
-            for j in range(i+1, n+2):
-                if diffOne(i_s, bank[j]):
-                    adj[i].append(j)
-                    adj[j].append(i)
-        
-        # 记录访问过的节点
-        vis = [False for _ in range(n+2)]
-
-        # 初始化deque, bfs
-        vis[0] = True
-        q = deque([0])
-        res = 1
-        while q:
-            tmp = q
-            q = deque([])
-            while tmp:
-                node = tmp.popleft()
-                vis[node] = True
-                for k in adj[node]:
-                    if k==n+1:
-                        return res
-                    if vis[k]:
-                        continue
-                    q.append(k)
-            res+=1
-        return -1
-```
-
-时间复杂度：$O(m*n^{2})$,$m$为序列长度,$n$为bank长度
-
-空间复杂度：$O(n^{2})$
-
 # 特定类型题
-
-## 蓄水池抽样
-
-#### [382. 链表随机节点](https://leetcode-cn.com/problems/linked-list-random-node/)
-
-```python
-    def __init__(self, head: Optional[ListNode]):
-        self.head = head
-
-    def getRandom(self) -> int:
-        cur, i, ans = self.head, 1, self.head.val
-        while cur:
-            if random.randint(0, i-1)==0:
-                ans = cur.val
-            i+=1
-            cur = cur.next
-        return ans
-```
-
-时间复杂度：初始化为$O(1)$，getRandom为$O(n)$
-
-空间复杂度：$O(1)$
-
-#### [398. 随机数索引](https://leetcode-cn.com/problems/random-pick-index/)
-
-```python
-class Solution:
-
-    def __init__(self, nums: List[int]):
-        self.nums = nums
-
-    def pick(self, target: int) -> int:
-        cnt, res = 0, 0
-        for idx, num in enumerate(self.nums):
-            if num==target:
-                if randint(0, cnt)==0:
-                    res = idx
-                cnt+=1
-        return res
-```
-
-时间复杂度：$O(n)$
-
-空间复杂度：$O(1)$
 
 ## 数据结构题
 
@@ -5236,34 +4981,6 @@ class Solution(object):
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
-
-#### [472. 连接词](https://leetcode.cn/problems/concatenated-words/)
-
-解法一：dfs
-
-```python
-class Solution:
-    def findAllConcatenatedWordsInADict(self, words: List[str]) -> List[str]:
-        if words == [""]: 
-            return []
-        words = set(words)
-        if '' in words:
-            words.remove("")
-
-        def dfs(word):
-            for i in range(len(word)):
-                if word[:i] in words and (word[i:] in words or dfs(word[i:])):
-                    return True 
-            return False
-
-        res = []
-        for word in words:
-            if dfs(word):
-                res.append(word)    
-        return res
-```
-
-时间复杂度：
 
 ## 其它
 
