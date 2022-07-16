@@ -335,6 +335,92 @@ class Solution:
 | [160. 相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/) | Easy   | https://leetcode-cn.com/problems/intersection-of-two-linked-lists/ |
 | [445. 两数相加 II](https://leetcode-cn.com/problems/add-two-numbers-ii/) | Medium | https://leetcode-cn.com/problems/add-two-numbers-ii/         |
 
+#### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
+
+```python
+class Solution:
+    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+        add = 0 # 进位
+        cur = head = ListNode()
+        p1, p2 = l1, l2
+        while p1 or p2:
+            cur_val = add
+            cur_val = cur_val + p1.val if p1 else cur_val
+            cur_val = cur_val + p2.val if p2 else cur_val
+            add = 1 if cur_val>=10 else 0
+            cur.next = ListNode(val=cur_val%10)
+            p1 = p1.next if p1 else p1
+            p2 = p2.next if p2 else p2
+            cur = cur.next
+        if add == 1:
+            cur.next = ListNode(val=1)
+        return head.next
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)
+
+```python
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        new_head, p1, p2 = ListNode(), list1, list2
+        cur = new_head
+        while p1 and p2:
+            if p1.val<p2.val:
+                cur.next = p1
+                p1 = p1.next
+            else:
+                cur.next = p2
+                p2 = p2.next
+            cur = cur.next
+        
+        if p1:
+            cur.next = p1
+        if p2:
+            cur.next = p2
+        
+        return new_head.next
+```
+
+时间复杂度：$O(m+n)$
+
+空间复杂度：$O(1)$
+
+#### [23. 合并K个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+```python
+from heapq import heappush, heappop
+class Solution:
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        lists = [x for x in lists if x] # 去除空链表
+        if not lists:
+            return None
+
+        new_head = ListNode()
+        cur = new_head
+
+        heap = []
+        for idx, node in enumerate(lists):
+            heappush(heap, (node.val, idx)) # 存的是idx
+        
+        while heap:
+            min_item = heappop(heap)
+            cur.next = lists[min_item[1]]  
+            cur = cur.next
+            lists[min_item[1]] = lists[min_item[1]].next # 往前移动一位
+            if lists[min_item[1]]: # 如果不为空，加入最小堆
+                heappush(heap, (lists[min_item[1]].val, min_item[1]))
+        
+        return new_head.next
+```
+
+时间复杂度：$O(nlogk)$，k为列表大小，n为总的元素个数，最小堆每次push需要$logk$
+
+空间复杂度：$O(k)$，最小堆的大小
+
 ### 快慢指针
 
 链表题中有一部分可以用快慢指针做，比较常见，建议熟练掌握。
@@ -414,7 +500,30 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
 
+```python
+class Solution:
+    def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode:
+        new_head = ListNode(next=head)
+        fast, slow, cnt = new_head, new_head, n
+        while cnt:
+            fast = fast.next
+            cnt -= 1
+        
+        while fast.next:
+            fast = fast.next
+            slow = slow.next
+        
+        # delete
+        slow.next = slow.next.next
+
+        return new_head.next
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ## 二叉树
 
@@ -1567,7 +1676,106 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### 
+
+```python
+class Solution:
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        m, n = len(nums1), len(nums2)
+        left, right = (m+n+1)//2, (m+n+2)//2
+        
+        def findK(i, j, k):
+            # i: nums1的起始位置, j: nums2的起始位置
+            if i>=m: # nums1为空数组
+                return nums2[j+k-1]
+            if j>=n: # nums2为空数组
+                return nums1[i+k-1]
+            
+            if k==1:
+                return min(nums1[i], nums2[j])
+            
+            midVal1 = nums1[i+ k//2 -1] if i+k//2-1<m else float('inf')
+            midVal2 = nums2[j+ k//2 -1] if j+k//2-1<n else float('inf')
+
+            if midVal1<midVal2:
+                return findK(i+k//2, j, k-k//2)
+            else:
+                return findK(i, j+k//2, k-k//2)
+        
+        return (findK(0, 0, left) + findK(0, 0, right)) / 2
+```
+
+时间复杂度：O(log(m+n))
+
+空间复杂度：O(log(m+n)) 算上递归的空间消耗
+
 ## 双指针
+
+#### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
+
+当短板向内移动时，面积才有可能会增加，并且不会消掉最大的状态，所以能贪心的通过双指针找到最大面积
+
+```python
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        i, j = 0, len(height)-1
+        res = 0    
+        while i<j:
+            cur = min(height[i], height[j])*(j-i)
+            res = max(res, cur)
+            if height[i]>height[j]:
+                j-=1
+            else:
+                i+=1
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [15. 三数之和](https://leetcode.cn/problems/3sum/)
+
+```python
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        n = len(nums)
+        res = []
+        nums = sorted(nums)
+        for k, num in enumerate(nums):
+            if k>0 and num==nums[k-1]: # 避免重复
+                continue
+            if num>0: # 升序数组，最小的值>0，三元组之和不可能为0，直接剪枝 
+                break
+
+            i, j = k+1, n-1
+            while i<j:
+                sumn = num + nums[i] + nums[j]
+                if sumn>0: #
+                    j-=1
+                    while i<j and nums[j]==nums[j+1]:
+                        j-=1
+                elif sumn<0:
+                    i+=1
+                    while i<j and nums[i]==nums[i-1]:
+                        i+=1
+                else:
+                    res.append([nums[k], nums[i], nums[j]])
+                    i+=1
+                    j-=1
+                    while i<j and nums[j]==nums[j+1]:
+                        j-=1
+                    while i<j and nums[i]==nums[i-1]:
+                        i+=1
+        return res
+```
+
+时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(1)$
+
+
+
 ## 滑动窗口
 
 滑动窗口可以分为变长滑动窗口和固定窗口大小的滑动窗口。
@@ -4667,7 +4875,6 @@ class Solution:
 #### [155. 最小栈](https://leetcode-cn.com/problems/min-stack/)
 
 ```python
-import heapq
 class MinStack:
 
     def __init__(self):
@@ -4856,6 +5063,34 @@ class Solution:
 
 ## 字符串匹配
 
+#### [10. 正则表达式匹配](https://leetcode.cn/problems/regular-expression-matching/)
+
+```python
+class Solution:
+    def isMatch(self, s: str, p: str) -> bool:
+        m, n = len(s), len(p)
+        
+        # dp[i][j]表示s[:i]和p[:j]是否匹配
+        dp = [[False for i in range(n+1)] for i in range(m+1)]
+        dp[0][0] = True
+        for j in range(2, n+1):
+            dp[0][j] = True if dp[0][j-2] and p[j-1]=='*' else False
+
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if s[i-1]==p[j-1] or p[j-1]=='.':
+                    dp[i][j] = dp[i-1][j-1]
+                else:
+                    if p[j-1] == '*':
+                        dp[i][j] = dp[i][j-2] or dp[i][j-1] or (dp[i-1][j] and (s[i-1]==p[j-2] or p[j-2]=='.')) # 分别对应匹配0,1,2个字符的情况
+        # print(dp)
+        return dp[m][n]
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(n^2)$
+
 ### 字符串哈希
 
 字符串哈希模板：
@@ -5003,7 +5238,29 @@ class Solution:
         return candidate
 ```
 
+#### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
 
+```python
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        if n == 1:
+            return ["()"]
+        elif n == 2:
+            return ["()()", "(())"]
+        
+        total = [[""], ["()"], ["()()", "(())"]]
+        
+        for i in range(3, n+1):
+            cur = []
+            for j in range(i):
+                p, q = total[j], total[i-j-1]
+                cur += ["(" + str1 + ")" + str2 for str1 in p for str2 in q]
+            total.append(cur)
+            
+        return total[n]
+```
+
+时间复杂度：$$
 
 ## 二叉树路径和
 
