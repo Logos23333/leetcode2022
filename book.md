@@ -1298,9 +1298,158 @@ class Solution:
 
 空间复杂度：$O(h)$
 
+#### [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
+
+解法一：迭代
+
+```python
+class Solution:
+    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+        if not root.left and not root.right:
+            return True
+        
+        if not (root.left and root.right):
+            return False
+
+        left_q = deque([root])
+        right_q = deque([root])
+        
+        while left_q and right_q:
+            node1 = left_q.popleft()
+            node2 = right_q.popleft()
+            
+            if not ((node1.left and node2.right) or (not node1.left and not node2.right)):
+                return False
+            
+            if not ((node1.right and node2.left)  or (not node1.right and not node2.left)):
+                return False
+            
+            if node1.left and node2.right:
+                if node1.left.val==node2.right.val:
+                    left_q.append(node1.left)
+                    right_q.append(node2.right)
+                else:
+                    return False
+
+            
+            if node1.right and node2.left:
+                if node1.right.val==node2.left.val:
+                    left_q.append(node1.right)
+                    right_q.append(node2.left)
+                else:
+                    return False
+            
+        return True    
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法二：递归
+
+```python
+class Solution:
+    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+        def dfs(left, right):
+            if not left and not right:
+                return True
+            
+            if not (left and right):
+                return False
+            
+            return left.val==right.val and dfs(left.right, right.left) and dfs(left.left, right.right)
+        
+        return dfs(root, root)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(h)$
+
 ## 队列
 ## 栈
 ### 单调栈
+
+#### [84. 柱状图中最大的矩形](https://leetcode.cn/problems/largest-rectangle-in-histogram/)
+
+```python
+class Solution:
+    def largestRectangleArea(self, heights: List[int]) -> int:
+        if not heights:
+            return 0
+
+        n = len(heights)
+        left, right = [0]*n, [0]*n # 分别记录左右侧的最后一个比当前位置高的位置
+
+        stack = []
+        for idx, height in enumerate(heights):
+            while stack and height<=heights[stack[-1]]:
+                stack.pop()
+
+            left[idx] = stack[-1] if stack else -1
+            stack.append(idx)
+        
+        stack = []
+        for idx in range(n-1, -1, -1):
+            while stack and heights[idx]<=heights[stack[-1]]:
+                stack.pop()
+            
+            right[idx] = stack[-1] if stack else n
+            stack.append(idx)
+        
+        return max((right[idx] - left[idx] - 1)*heights[idx] for idx in range(n))
+        
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [85. 最大矩形](https://leetcode.cn/problems/maximal-rectangle/)
+
+```python
+class Solution:
+    def maximalRectangle(self, matrix: List[List[str]]) -> int:
+        def getMaxRec(nums):
+            n = len(nums)
+            left, right = [0]*n, [0]*n
+
+            stack = []
+            for i in range(n):
+                while stack and nums[i]<=nums[stack[-1]]:
+                    stack.pop()
+                left[i] = stack[-1] if stack else -1
+                stack.append(i)
+            
+            stack = []
+            for i in range(n-1, -1, -1):
+                while stack and nums[i]<=nums[stack[-1]]:
+                    stack.pop()
+                right[i] = stack[-1] if stack else n
+                stack.append(i)
+            
+            return max([(right[i]-left[i]-1)*nums[i] for i in range(n)])
+        
+        m, n = len(matrix), len(matrix[0])
+        nums = [0]*n
+        res = 0
+        for i in range(m): # O(m)
+            for j in range(n): # O(n)
+                if matrix[i][j] == '0': # 必须有“底”
+                    nums[j] = 0
+                else:
+                    nums[j] += 1
+            maxRec = getMaxRec(nums) # O(n)
+            res = max(res, maxRec)
+        
+        return res
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(n)$
+
 ## 队列
 # 算法
 
@@ -1423,7 +1572,6 @@ class Solution:
 ```python
 class Solution:
     def search(self, nums: List[int], target: int) -> int:     
-        
         def binarySearch(nums, l, r, target):
             if l>=r:
                 return l
@@ -1432,7 +1580,7 @@ class Solution:
                 if nums[m]<target:
                     l = m+1                  
                 else:
-                    r = m # 左开右闭
+                    r = m # 左闭右开
             return -1 if nums[l]!=target else l
         
         n = len(nums)
@@ -1448,7 +1596,7 @@ class Solution:
                 if nums[m]<=target<=nums[j-1]:
                     return binarySearch(nums, m, j, target)
                 else:
-                    j=m # 左开右闭
+                    j=m # 左闭右开
                 
         return -1 #没找到
 ```
@@ -1676,7 +1824,7 @@ class Solution:
 
 空间复杂度：$O(n)$
 
-#### 
+#### [4. 寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/)
 
 ```python
 class Solution:
@@ -1771,6 +1919,29 @@ class Solution:
 ```
 
 时间复杂度：$O(n^{2})$
+
+空间复杂度：$O(1)$
+
+#### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
+
+思路：用i, j 分别表示下一个0和2应该在的位置，把0，2分好之后1自然也被分好了
+
+```python
+class Solution:
+    def sortColors(self, nums: List[int]) -> None:
+        n = len(nums)
+        i, j, p = 0, n-1, 0
+        while p<=j: # 注意这里是等号
+            while p<j and nums[p]==2:
+                nums[p], nums[j] = nums[j], nums[p]
+                j-=1
+            if nums[p]== 0:
+                nums[p], nums[i] = nums[i], nums[p]
+                i+=1
+            p+=1
+```
+
+时间复杂度：$O(n)$
 
 空间复杂度：$O(1)$
 
@@ -2360,6 +2531,101 @@ class Solution:
 
 ## dfs
 
+#### [78. 子集](https://leetcode.cn/problems/subsets/)
+
+解法一：dfs
+
+```python
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        res = []
+        def dfs(m, n, path):
+            if len(path) == m:
+                res.append(path)
+                return
+            
+            for idx in range(n, len(nums)):
+                num = nums[idx]
+                dfs(m, idx+1, path+[num])
+        
+        for i in range(len(nums)+1):
+            dfs(i, 0, [])
+        
+        return res
+```
+
+时间复杂度：$O(2^n)$
+
+空间复杂度：$O(1)$，不算递归的栈消耗
+
+解法二：位运算
+
+```python
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        n = len(nums)
+        states = 1<<n
+        res = []
+        for i in range(states): # 从0~2^(n-1)的每个数字都代表了一种组合
+            cur_path = []
+            for idx, num in enumerate(nums):
+                cur = 1<<idx
+                if cur & i:
+                    cur_path.append(num)
+            res.append(cur_path)
+        return res
+```
+
+时间复杂度：$O(n*2^{n})$
+
+空间复杂度：$O(n)$
+
+#### [79. 单词搜索](https://leetcode.cn/problems/word-search/)
+
+```python
+class Solution:
+    def exist(self, board: List[List[str]], word: str) -> bool:
+        m, n = len(board), len(board[0])
+        record = [[False for _ in range(n)] for _ in range(m)]
+
+        def dfs(i, j, word_pos):
+            # 在i, j的上下左右搜索，如果没找到返回False
+            if word_pos==len(word):
+                return True
+            
+            record[i][j] = True
+
+            res = False
+            if i+1<m and not record[i+1][j] and board[i+1][j]==word[word_pos]:
+                res |= dfs(i+1, j, word_pos+1)
+            
+            if not res and i-1>=0 and not record[i-1][j] and board[i-1][j]==word[word_pos]:
+                res |= dfs(i-1, j, word_pos+1)
+            
+            if not res and j+1<n and not record[i][j+1] and board[i][j+1]==word[word_pos]:
+                res |= dfs(i, j+1, word_pos+1)
+            
+            if not res and j-1>=0 and not record[i][j-1] and board[i][j-1]==word[word_pos]:
+                res |= dfs(i, j-1, word_pos+1)
+            
+            record[i][j] = False
+            return res
+            
+        # 先找个开头
+        res = False
+        for i in range(m):
+            for j in range(n):
+                if not res and board[i][j] == word[0]:
+                    res |= dfs(i, j, 1)
+        return res
+```
+
+时间复杂度：$O(M*N*3^{L})$，最坏的情况下，有M*N个开头可以选，每次都要走L步，每步都有3个方向（来的方向不会走）
+
+空间复杂度：$O(M*N)$
+
+
+
 ### 博弈论
 
 #### [464. 我能赢吗](https://leetcode.cn/problems/can-i-win/)
@@ -2412,11 +2678,34 @@ state的第i位为0时代表数组的第i位元素未被使用，为1时代表�
 
 如果是传参数k，是不能“回头”的，所以如果需要“回头”，要用状态压缩。
 
-| 题目                                                         | 难度   | 链接                                                         |
-| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
-| [526. 优美的排列](https://leetcode-cn.com/problems/beautiful-arrangement/) | Medium | https://leetcode-cn.com/problems/beautiful-arrangement/      |
-| [698. 划分为k个相等的子集](https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/) | Medium | https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/ |
-|                                                              |        |                                                              |
+#### [46. 全排列](https://leetcode.cn/problems/permutations/)
+
+```python
+class Solution:
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        n = len(nums)
+        res = []
+        def dfs(state, path):
+            if len(path) == n:
+                res.append(path)
+                return
+            
+            for idx, num in enumerate(nums):
+                cur = 1<<idx
+                if state & cur:
+                    continue
+                
+                dfs(state|cur, path+[num])
+        
+        dfs(0, [])
+        return res
+```
+
+时间复杂度：$O(n!)$
+
+空间复杂度：$O(n)$
+
+
 
 #### [526. 优美的排列](https://leetcode-cn.com/problems/beautiful-arrangement/)
 
@@ -3187,7 +3476,7 @@ def solution():
 
 #### ⭐dp[V+1\]模板(优化)
 
-完全背包问题的递推公式为：`dp[i][j] = max(dp[i-1][j], dp[i][j-v[i]]+w[i])$
+完全背包问题的递推公式为：$dp[i][j] = max(dp[i-1][j], dp[i][j-v[i]]+w[i])$
 
 ```python
 def solution():
@@ -3772,13 +4061,13 @@ def solution(nums):
                 i = m+1
         return i
 
-        res = 0
-        for i in range(1, n):
-            lst_len = find(g, nums[i], i+1) # O(logn)
-            dp[i] = lst_len
-            g[lst_len] = min(nums[i], g[lst_len]) # 更新g数组
-            res = max(res, dp[i])
-        return res
+    res = 0
+    for i in range(1, n):
+        lst_len = find(g, nums[i], i+1) # O(logn)，寻找nums[i]在g数组中的插入位置
+        dp[i] = lst_len 
+        g[lst_len] = min(nums[i], g[lst_len]) # 更新g数组
+        res = max(res, dp[i])
+    return res
 ```
 
 时间复杂度：$O(nlogn)$
@@ -4906,6 +5195,76 @@ class MinStack:
 
 ## 组合/排列
 
+#### [31. 下一个排列](https://leetcode.cn/problems/next-permutation/)
+
+这题要注意大于等于
+
+```python
+class Solution:
+    def nextPermutation(self, nums: List[int]) -> None:
+        """
+        Do not return anything, modify nums in-place instead.
+        """
+        
+        n = len(nums)
+
+        # 从右往左找，找到第一个nums[i-1]<nums[i]的值
+        i = n-1
+        while i>0 and nums[i-1]>=nums[i]: # 注意，后者需要大于等于，我们要跳过那些等于的
+            i-=1
+        
+        # 在nums[i-1:]中，找到比nums[i-1]大的最小值 nums[j]
+        if i>0:
+            j = i
+            minn, min_idx = float('inf'), j
+            while j<n:
+                if nums[j]>nums[i-1] and nums[j]<=minn: # 注意，后者需要小于等于，因为我们想要越右越好
+                    minn, min_idx = nums[j], j
+                j+=1
+        
+            # swap nums[i-1]和nums[j] 确保生成的排列一定会比原来大
+            nums[i-1], nums[min_idx] = nums[min_idx], nums[i-1]
+		
+        # 将nums[i:]反转
+        # 注意，这里只需要反转，不需要排序
+        j = n-1
+        while i<j:
+            nums[i], nums[j] = nums[j], nums[i]
+            i+=1
+            j-=1
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+
+解法一：dfs
+
+```python
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        res = []
+        def dfs(i, path, sumn):
+            if sumn>target:
+                return
+            elif sumn==target:
+                res.append(path)
+                return
+
+            for idx in range(i, len(candidates)):
+                num = candidates[idx]
+                dfs(idx, path+[num], sumn+num)
+        
+        dfs(0, [], 0)
+        return res
+```
+
+复杂度：参考https://leetcode.cn/problems/combination-sum/solution/zu-he-zong-he-by-leetcode-solution/
+
+
+
 ## 基本计算器
 
 #### [224. 基本计算器](https://leetcode-cn.com/problems/basic-calculator/)
@@ -5261,6 +5620,137 @@ class Solution:
 ```
 
 时间复杂度：$$
+
+#### [32. 最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+解法一：dp
+
+```python
+class Solution:
+    def longestValidParentheses(self, s: str) -> int:
+        n = len(s)
+
+        dp = [0 for i in range(n)] # dp[i]表示以s[i]为底的最长连续括号数
+        res = 0
+        for i in range(1, n):
+            if s[i]==')' and s[i-1]=='(':
+                dp[i] = dp[i-2] + 2
+            elif s[i]==')' and i-dp[i-1]-1>=0 and s[i-dp[i-1]-1]=='(':
+                dp[i] = dp[i-1] + dp[i-dp[i-1]-2] + 2 
+            res = max(res, dp[i])
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法二：stack
+
+```python
+class Solution:
+    def longestValidParentheses(self, s: str) -> int:
+        n = len(s)
+
+        stack = [-1]
+        res = 0
+        for idx, char in enumerate(s):
+            if char == '(':
+                stack.append(idx)
+            else:
+                stack.pop()
+                if not stack: # 当前)为未匹配的右括号
+                    stack.append(idx)
+                else:
+                    res = max(res, idx-stack[-1])
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法三：计数法
+
+```python
+class Solution:
+    def longestValidParentheses(self, s: str) -> int:
+        n = len(s)
+
+        res = 0
+        # 从左到右
+        left, right = 0, 0
+        for idx, char in enumerate(s):
+            if char=='(':
+                left += 1
+            else:
+                right += 1
+            
+            if left == right:
+                res = max(res, 2*left)
+            elif right>left:
+                left, right = 0, 0
+    	# 从右到左
+        left, right = 0, 0
+        for idx, char in enumerate(s[::-1]):
+            if char=='(':
+                left += 1
+            else:
+                right += 1
+            
+            if left == right:
+                res = max(res, 2*left)
+            elif left>right: # 注意这里是left>right
+                left, right = 0, 0
+
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [48. 旋转图像](https://leetcode.cn/problems/rotate-image/)
+
+```python
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        n = len(matrix)
+        for i in range(n//2):
+            for j in range(n):
+                matrix[i][j], matrix[n-i-1][j] = matrix[n-i-1][j], matrix[i][j]
+        
+        for i in range(n):
+            for j in range(i):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(1)$
+
+#### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
+
+```python
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        res = []
+        intervals = sorted(intervals, key=lambda x:(x[0], x[1])) # 先排序
+        for idx, interval in enumerate(intervals):
+            if not res or interval[0]>res[-1][1]: # 与上一个区间不交叉，直接加入
+                res.append(interval)
+            else:
+                res[-1][1] = max(res[-1][1], interval[1]) # 合并
+        
+        return res
+```
+
+时间复杂度：$O(nlogn)$，排序需要$O(nlogn)$
+
+空间复杂度：$O(1)$
+
+
 
 ## 二叉树路径和
 
