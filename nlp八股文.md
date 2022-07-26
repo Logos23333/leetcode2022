@@ -262,6 +262,61 @@ boosting是一族可以将弱学习器提升为强学习器的算法，先从初
 
 <img src="https://pic1.zhimg.com/80/v2-4b53b731a961ee467928619d14a5fd44_1440w.jpg" style="zoom: 50%;" />
 
+### Multi-head Attention
+
+```python
+class MultiHeadedAttention(nn.Module):
+	def __init__(self, h, d_model, dropout=0.1):
+		super(MultiHeadedAttention, self).__init__()
+		assert d_model % h == 0
+		# We assume d_v always equals d_k
+		self.d_k = d_model // h
+		self.h = h
+		self.linears = clones(nn.Linear(d_model, d_model), 4)
+		self.attn = None
+		self.dropout = nn.Dropout(p=dropout)
+	
+	def forward(self, query, key, value, mask=None): 
+		if mask is not None:
+			# 所有h个head的mask都是相同的 
+			mask = mask.unsqueeze(1)
+		nbatches = query.size(0)
+		
+		# 1) 首先使用线性变换，然后把d_model分配给h个Head，每个head为d_k=d_model/h 
+		query, key, value = \
+			[l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)	
+				for l, x in zip(self.linears, (query, key, value))]
+		
+		# 2) 使用attention函数计算
+		x, self.attn = attention(query, key, value, mask=mask, 
+			dropout=self.dropout)
+		
+		# 3) 把8个head的64维向量拼接成一个512的向量。然后再使用一个线性变换(512,521)，shape不变。 
+		x = x.transpose(1, 2).contiguous() \
+			.view(nbatches, -1, self.h * self.d_k)
+		return self.linears[-1](x)
+```
+
+### Layer Norm
+
+```python
+# features: (bsz, max_len, hidden_dim)
+class LayerNorm(nn.Module):
+    def __init__(self, features, eps=1e-6):
+	super(LayerNorm, self).__init__()
+	self.a_2 = nn.Parameter(torch.ones(features))
+	self.b_2 = nn.Parameter(torch.zeros(features))
+	self.eps = eps
+	
+    def forward(self, x):
+	# 就是在统计每个样本所有维度的值，求均值和方差，所以就是在hidden dim上操作
+	# 相当于变成[bsz*max_len, hidden_dim], 然后再转回来, 保持是三维
+	mean = x.mean(-1, keepdim=True) # mean: [bsz, max_len, 1]
+	std = x.std(-1, keepdim=True) # std: [bsz, max_len, 1]
+        # 注意这里也在最后一个维度发生了广播
+	return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
+```
+
 ### add&norm的作用？
 
 利用的resnet的残差连接， 一是解决梯度消失的问题，二是解决权重矩阵的退化问题。
@@ -290,7 +345,7 @@ BN是对每一批的数据在进入激活函数前进行归一化，可以提高
 
 ### 为什么要multi-head?
 
-多头可以使参数矩阵形成多个子空间，矩阵整体的size不变，只是改变了每个head对应的维度大小，这样做使矩阵对多方面信息进行学习，但是计算量和单个head差不多
+多头可以使参数矩阵形成多个子空间，矩阵整体的size不变，只是改变了每个head对应的维度大小，这样做使矩阵对多方面信息进行学习，但是计算量和单个head差不多。
 
 ### Decoder阶段的mha和encoder的mha有什么区别？
 
@@ -308,9 +363,46 @@ BERT和transformer的目标不一致，bert是语言的预训练模型，需要�
 
 ### 解释一下transformer的位置编码
 
+```python
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout, max_len=5000):
+        """
+        :param d_model: pe编码维度，一般与word embedding相同，方便相加
+        :param dropout: dorp out
+        :param max_len: 语料库中最长句子的长度，即word embedding中的L
+        """
+        super(PositionalEncoding, self).__init__()
+        # 定义drop out
+        self.dropout = nn.Dropout(p=dropout)
+        # 计算pe编码
+        pe = torch.zeros(max_len, d_model) # 建立空表，每行代表一个词的位置，每列代表一个编码位
+        position = torch.arange(0, max_len).unsqueeze(1) # 建个arrange表示词的位置以便公式计算，size=(max_len,1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) *    # 计算公式中10000**（2i/d_model)
+                             -(math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)  # 计算偶数维度的pe值
+        pe[:, 1::2] = torch.cos(position * div_term)  # 计算奇数维度的pe值
+        pe = pe.unsqueeze(0)  # size=(1, L, d_model)，为了后续与word_embedding相加,意为batch维度下的操作相同
+        self.register_buffer('pe', pe)  # pe值是不参加训练的
+
+    def forward(self, x):
+        # 输入的最终编码 = word_embedding + positional_embedding
+        x = x + Variable(self.pe[:, :x.size(1)],requires_grad=False) #size = [batch, L, d_model]
+        return self.dropout(x) # size = [batch, L, d_model]
+```
+
 因为self-attention是位置无关的，无论句子的顺序是什么样的，通过self-attention计算的token的hidden embedding都是一样的，这显然不符合人类的思维。因此要有一个办法能够在模型中表达出一个token的位置信息，transformer使用了固定的positional encoding来表示token在句子中的绝对位置信息。作者们使用了不同频率的正弦和余弦函数来作为位置编码。
 
 参考：https://www.zhihu.com/question/347678607
+
+https://zhuanlan.zhihu.com/p/360539748
+
+### 其它位置编码技术的优缺点？
+
+1. 整型值编码：[1, 2,..., n]，直观。缺点：模型在测试时可能遇到比训练数据更长的序列，不利于泛化。随着序列长度的增加，位置值会越来越大。
+2. 用[0,1]值标记位置。缺点：序列长度不一致的时候，token之间的相对距离不一样。
+3. 二进制编码。可以生成一个和d_model维度一致的二进制数。缺点：这样编码出来的位置向量，处在一个离散的空间中，不同位置间的变化是不连续的
+4. 用周期函数来表示位置。把周期函数的波长拉长来表示位置，避免首尾的距离太相近
+5. 用sin和cos交替来表示位置。不仅能表示一个token的绝对位置，还可以表示一个token的相对位置
 
 ### 你还了解什么关于位置编码的技术？各自的优缺点是什么？
 
@@ -412,3 +504,6 @@ https://zhuanlan.zhihu.com/p/74090249
 ### fastBERT
 
 减少BERT的decoder层数。先finetune，蒸馏时每一层decoder加上分类网络，计算其与最后一层的KL/JS散度。通过分类的不确定度（Uncertainty）是否达到阈值来判断是否再需要后续的decoder层
+
+## BERT和Transformer的位置编码区别
+
