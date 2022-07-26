@@ -396,6 +396,12 @@ class PositionalEncoding(nn.Module):
 
 https://zhuanlan.zhihu.com/p/360539748
 
+### 为什么Transformer的位置编码可以反应出相对位置
+
+如何理解Transformer论文中的positional encoding，和三角函数有什么关系？ - 猛猿的回答 - 知乎 https://www.zhihu.com/question/347678607/answer/2301693596
+
+**两个位置编码的点积(dot product)仅取决于[偏移量](https://www.zhihu.com/search?q=偏移量&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A2301693596})** △t **，也即两个位置编码的点积可以反应出两个位置编码间的距离。** （运用和角公式）
+
 ### 其它位置编码技术的优缺点？
 
 1. 整型值编码：[1, 2,..., n]，直观。缺点：模型在测试时可能遇到比训练数据更长的序列，不利于泛化。随着序列长度的增加，位置值会越来越大。
@@ -506,4 +512,21 @@ https://zhuanlan.zhihu.com/p/74090249
 减少BERT的decoder层数。先finetune，蒸馏时每一层decoder加上分类网络，计算其与最后一层的KL/JS散度。通过分类的不确定度（Uncertainty）是否达到阈值来判断是否再需要后续的decoder层
 
 ## BERT和Transformer的位置编码区别
+
+BERT的位置编码是学习出来的，Transformer是通过正弦函数生成的。
+
+原生的Transformer中使用的是正弦位置编码（Sinusoidal Position Encoding），是绝对位置的函数式编码。由于Transformer中为self-attention，这种正余弦函数由于点乘操作，会有相对位置信息存在，但是没有方向性，且通过权重矩阵的映射之后，这种信息可能消失。
+
+BERT中使用的是学习位置嵌入（learned position embedding），是绝对位置的参数式编码，且和相应位置上的词向量进行相加而不是拼接。
+
+## BERT embedding layer有三个嵌入层的含义？
+
+Token-embedding：将单词转换为固定维的向量表示形式，在BERT-base中，每个单词都表示为一个768维的向量。
+
+Segment-embedding：BERT在解决双句分类任务（如判断两段文本在语义上是否相似）时是直接把这两段文本拼接起来输入到模型中，模型是通过segment-embedding区分这两段文本。对于两个句子，第一个句子的segment-embedding部分全是0，第二个句子的segment-embedding部分全是1。
+
+Position-embedding：BERT使用transformer编码器，通过self-attention机制学习句子的表征，self-attention不关注token的位置信息，所以为了能让transformer学习到token的位置信息，在输入时增加了position-embedding。
+
+
+
 
