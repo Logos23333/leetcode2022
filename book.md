@@ -124,6 +124,32 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
+
+```python
+class Solution:
+    def longestConsecutive(self, nums: List[int]) -> int:
+        res = 0
+
+        num_set = set(nums)
+        for idx, num in enumerate(nums):
+            if num-1 not in num_set:
+                cur_num = num
+                cur_len = 1
+                while cur_num+1 in num_set:
+                    cur_len += 1
+                    cur_num += 1
+                
+                res = max(res, cur_len)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+
+
 ### 前缀和
 
 前缀和通常被用于“连续子序列之和/积”类型的题目中，它计算序列的前k个数之和并用哈希表存储。
@@ -519,6 +545,53 @@ class Solution:
         slow.next = slow.next.next
 
         return new_head.next
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
+
+```python
+class Solution:
+    def hasCycle(self, head: Optional[ListNode]) -> bool:
+        slow, fast = head, head
+        while slow and fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:
+                return True
+        return False
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [142. 环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
+
+```python
+class Solution:
+    def detectCycle(self, head: ListNode) -> ListNode:
+        if not head or not head.next:
+            return None
+
+        slow, fast = head, head
+        while slow and fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow==fast:
+                break
+        
+        if slow!=fast:
+            return None
+
+        cur = head
+        while cur!=slow:
+            cur, slow = cur.next, slow.next
+        
+        return cur
 ```
 
 时间复杂度：$O(n)$
@@ -1366,6 +1439,39 @@ class Solution:
 时间复杂度：$O(n)$
 
 空间复杂度：$O(h)$
+
+#### [114. 二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
+```python
+class Solution:
+    def flatten(self, root: TreeNode) -> None:
+        def dfs(root):
+            if not root:
+                return None, None
+            if not root.left and not root.right:
+                return root, root
+            
+            left_head, left_tail = dfs(root.left)
+            right_head, right_tail = dfs(root.right)
+            root.left = None
+            root.right = left_head
+            if left_tail:
+                left_tail.left = None
+                left_tail.right = right_head
+            else:
+                root.right = right_head
+            
+            if right_tail:
+                return root, right_tail
+            else:
+                return root, left_tail
+        
+        head, tail = dfs(root)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 ## 队列
 ## 栈
@@ -4875,7 +4981,46 @@ class Solution:
 
 空间复杂度：$O(m*n)$
 
+#### [139. 单词拆分](https://leetcode.cn/problems/word-break/)
 
+```python
+class Solution:
+    def wordBreak(self, s: str, wordDict: List[str]) -> bool:
+        m = {word: True for word in wordDict}
+
+        n = len(s)
+        # dp[i]表示s[:i]能否拼出
+        dp = [False for i in range(n+1)]
+        dp[0] = True
+        for i in range(1, n+1):
+            for j in range(1, i+1):
+                if dp[i-j] and s[i-j:i] in m:
+                    dp[i] = True
+                    break
+        return dp[n]
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(n)$
+
+#### [152. 乘积最大子数组](https://leetcode.cn/problems/maximum-product-subarray/)
+
+```python
+class Solution:
+    def maxProduct(self, nums: List[int]) -> int:
+        maxn, minn, res = nums[0], nums[0], nums[0]
+        
+        for idx, num in enumerate(nums[1:]):
+            maxn, minn = max(num, max(num*maxn, num*minn)), min(num, min(num*maxn, num*minn))
+            res = max(res, maxn)
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ### 数学
 
@@ -5021,6 +5166,21 @@ class Solution(object):
         ret = sum(1 for i in range(32) if n & (1 << i))
         return ret      
 ```
+
+#### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
+
+```python
+class Solution:
+    def singleNumber(self, nums: List[int]) -> int:
+        xorsum = 0
+        for idx, num in enumerate(nums):
+            xorsum ^= num
+        return xorsum
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 #### [260. 只出现一次的数字 III](https://leetcode-cn.com/problems/single-number-iii/)
 
@@ -5749,6 +5909,23 @@ class Solution:
 时间复杂度：$O(nlogn)$，排序需要$O(nlogn)$
 
 空间复杂度：$O(1)$
+
+#### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+本质上来说只需要知道当前时间点右侧最大的值就可以了，所以维护一个right_most即可。
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        n = len(prices)
+        right_most = 0
+        res = 0
+        for i, num in enumerate(prices[::-1]):
+            right_most = max(right_most, num)
+            res = max(res, right_most-num)
+                 
+        return res
+```
 
 
 
