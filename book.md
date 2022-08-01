@@ -509,6 +509,8 @@ class Solution:
 
 #### [206. 反转链表](https://leetcode-cn.com/problems/reverse-linked-list/)
 
+解法一：迭代
+
 ```python
 class Solution:
     def reverseList(self, head: ListNode) -> ListNode:
@@ -525,6 +527,55 @@ class Solution:
 时间复杂度：$O(n)$
 
 空间复杂度：$O(1)$
+
+解法二：递归
+
+```python
+class Solution:
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head:
+            return None
+            
+        def dfs(head):
+            if not head.next:
+                return head, head
+            
+            next_head, next_tail = dfs(head.next)
+            next_tail.next = head
+            head.next = None
+
+            return next_head, head
+        
+        new_head, new_tail = dfs(head)
+        return new_head
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+解法三：一行迭代
+
+```python
+class Solution:
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head:
+            return None
+
+        cur, nxt = head, head.next
+        cur.next = None
+
+        while nxt:
+            cur, nxt.next, nxt = nxt, cur, nxt.next
+        
+        return cur
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+
 
 #### [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
 
