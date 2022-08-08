@@ -649,6 +649,75 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [287. 寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)
+
+```python
+class Solution:
+    def findDuplicate(self, nums: List[int]) -> int:
+        n = len(nums)
+        slow, fast = 0, 0
+        while True:
+            slow = nums[slow]
+            fast = nums[nums[fast]]
+            if slow==fast:
+                break
+        
+        cur = 0
+        while cur!=slow:
+            cur = nums[cur]
+            slow = nums[slow]
+        
+        return cur
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [234. 回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+```python
+class Solution:
+    def isPalindrome(self, head: Optional[ListNode]) -> bool:
+        if not head.next:
+            return True
+        
+        if not head.next.next:
+            return head.val == head.next.val
+
+        def reverse(head):
+            if not head or not head.next:
+                return head
+
+            cur, nxt = head, head.next
+            cur.next = None
+            while nxt:
+                cur, nxt.next, nxt = nxt, cur, nxt.next
+
+            return cur
+
+        slow, fast = head, head.next
+        while fast and fast.next:
+            fast = fast.next.next
+            slow = slow.next
+        
+        new_head = reverse(slow.next)
+        p1, p2 = head, new_head
+        res = True
+        while p1 and p2:
+            if p1.val!=p2.val:
+                res = False
+                break
+            p1, p2 = p1.next, p2.next
+        
+        reverse(new_head)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## 二叉树
 
 ### 完全二叉树
@@ -1026,7 +1095,32 @@ class Codec:
 
 空间复杂度：$O(n)$。
 
+#### 中序遍历二叉树
 
+建议熟练掌握迭代写法
+
+```python
+def inorder(root):
+    gray, white = 0, 1
+    stack = [(white, root)]
+    res = []
+    while stack:
+        color, node = stack.pop()
+        if not node:
+            continue
+        if color == white:
+            stack.append((white, node.right)) # 先入栈的是右子树
+            stack.append((gray, node))
+            stack.append((white, node.left))
+        else:
+            res.append(node.val)
+    
+    return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 ### 路径总和题
 
@@ -1607,7 +1701,393 @@ class Solution:
 
 空间复杂度：$O(n)$
 
-## 队列
+## 并查集
+
+概念可参考https://oi-wiki.org/ds/dsu/
+
+基础并查集
+
+```python
+# Python Version
+fa = [0] * MAXN # 记录某个人的爸爸是谁，特别规定，祖先的爸爸是他自己
+
+# 递归
+def find(x):
+    # 寻找x的祖先
+    if fa[x] == x:
+        return x # 如果x是祖先则返回
+    else:
+        return find(fa[x]) # 如果不是则 x 的爸爸问 x 的爷爷
+
+# 非递归
+def find(x):
+    while x != fa[x]: # 如果 x 不是祖先，就一直往上一辈找
+        x = fa[x]
+    return x # 如果 x 是祖先则返回
+
+# 路径压缩，一边查找一边压缩
+def find(x):
+    if x != fa[x]: # x 不是自身的父亲，即 x 不是该集合的代表
+        fa[x] = find(fa[x]) # 查找 x 的祖先直到找到代表，于是顺手路径压缩
+    return fa[x]
+
+# 合并
+def unionSet(x, y):
+    # x 与 y 所在家族合并
+    x = find(x)
+    y = find(y)
+    fa[x] = y # 把 x 的祖先变成 y 的祖先的儿子
+```
+
+带权值的并查集
+
+```python
+fa = [0] * MAXN
+weight = [0] * MAXN
+
+# 非递归, 路径压缩
+def find(x):
+    if x != fa[x]:
+        father = fa[x]
+        fa[x] = find(fa[x])
+        weight[x] *= weight[father] # 这里的运算法则视题目而定，一定要后乘，要等父节点也路径压缩之后再乘
+	return fa[x]
+
+# 合并
+def unionSet(x, y, val):
+    x_fa = find(x)
+    y_fa = find(y)
+    if x_fa == y_fa:
+        return
+    
+    fa[x_fa] = y_fa
+    weight[x_fa] = weight[y] * val / weight[x] # 这里的运算法则视题目而定
+```
+
+#### [399. 除法求值](https://leetcode.cn/problems/evaluate-division/)
+
+```python
+class Solution:
+    def calcEquation(self, equations: List[List[str]], values: List[float], queries: List[List[str]]) -> List[float]:
+        n = len(equations)
+        fa = [0]*100
+        weight = [0.0]*100
+        m = dict() # 存放符号到idx的映射
+
+        def find(x):
+            if x!=fa[x]:
+                father = fa[x]
+                fa[x] = find(fa[x])
+                weight[x] *= weight[father]
+
+            return fa[x]
+        
+        def union(x, y, val):
+            x_fa = find(x)
+            y_fa = find(y)
+            if x_fa == y_fa:
+                return
+            
+            fa[x_fa] = y_fa
+            weight[x_fa] = weight[y]*val/weight[x]
+
+        for idx, equation in enumerate(equations):
+            x, y = equation[0], equation[1]
+            if x not in m and y not in m:
+                m[x] = len(m)
+                m[y] = len(m)
+
+                fa[m[x]] = m[y]
+                fa[m[y]] = m[y]
+                weight[m[x]] = values[idx]
+                weight[m[y]] = 1.0 # 父节点的父节点是自己，其权值设为1
+            elif x in m and y in m:
+                union(m[x], m[y], values[idx])
+            elif x in m and y not in m:
+                m[y] = len(m)
+                fa[m[y]] = m[x]
+                weight[m[y]] = 1.0/values[idx]
+            elif x not in m and y in m:
+                m[x] = len(m)
+                fa[m[x]] = m[y]
+                weight[m[x]] = values[idx]
+        
+        res = []
+        for idx, query in enumerate(queries):
+            x, y = query[0], query[1]
+            if x not in m or y not in m:
+                res.append(-1.0)
+            else:
+                x_fa = find(m[x])
+                y_fa = find(m[y])
+                if x_fa!=y_fa:
+                    res.append(-1.0)
+                else:
+                    res.append(weight[m[x]]/weight[m[y]])
+        return res
+```
+
+时间复杂度：$O((m+n)logA)$, A为不同字符的个数，并查集查询和构建的复杂度为logA
+
+空间复杂度：$O(A)$
+
+#### [547. 省份数量](https://leetcode.cn/problems/number-of-provinces/)
+
+解法一：dfs
+
+```python
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+        n = len(isConnected)
+        v = [False for _ in range(n)] # 记录visited过的city
+
+        def dfs(x):
+            if v[x]:
+                return
+            
+            v[x] = True
+            for i in range(len(isConnected)):
+                if isConnected[x][i] and not v[i]:
+                    dfs(i)
+        
+        res = 0
+        for i in range(n):
+            if not v[i]:
+                res += 1
+                dfs(i)
+        
+        return res
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(n)$
+
+解法二：并查集，这里并查集并不会带来更优的时间复杂度
+
+```python
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+        n = len(isConnected)
+        fa = [i for i in range(n)]
+
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x, y = find(x), find(y)
+            fa[x] = y
+
+        res = n
+        for i in range(n):
+            for j in range(i):
+                if isConnected[i][j]==1 and find(i)!=find(j):
+                    res -= 1
+                    union(i, j)
+                
+        
+        return res
+```
+
+时间复杂度：$O(n^2logn)$
+
+空间复杂度：$O(n)$
+
+#### [684. 冗余连接](https://leetcode.cn/problems/redundant-connection/)
+
+如果edge对应的两个顶点本就联通，说明该edge是多余的
+
+```python
+class Solution:
+    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
+        fa = [0]*1001
+
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x = find(x)
+            y = find(y)
+            fa[x] = y
+        
+        res = None
+        for idx, edge in enumerate(edges):
+            x, y = edge[0], edge[1]
+            
+            if fa[x]==0 and fa[y]==0:
+                fa[x], fa[y] = y, y
+            elif fa[x]==0 and fa[y]!=0:
+                fa[x] = find(y)
+            elif fa[x]!=0 and fa[y]==0:
+                fa[y] = find(x)
+            else:
+                if find(x)==find(y):
+                    res = edge
+                else:
+                    union(x, y)
+        
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+#### [1319. 连通网络的操作次数](https://leetcode.cn/problems/number-of-operations-to-make-network-connected/)
+
+```python
+class Solution:
+    def makeConnected(self, n: int, connections: List[List[int]]) -> int:
+        if len(connections)<n-1: return -1
+        fa = [-1]*n
+
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x = find(x)
+            y = find(y)
+            fa[x] = y
+        
+        dup = 0 # 记录无用connection的个数
+        for idx, edge in enumerate(connections):
+            x, y = edge[0], edge[1]
+            if fa[x]==-1 and fa[y]==-1:
+                fa[x], fa[y] = y, y
+            elif fa[x]==-1 and fa[y]!=-1:
+                fa[x] = y
+            elif fa[x]!=-1 and fa[y]==-1:
+                fa[y] = x
+            else:
+                x_fa = find(x)
+                y_fa = find(y)
+                if x_fa==y_fa:
+                    dup+=1
+                else:
+                    union(x, y)
+        
+        return n-(len(connections)-dup+1) # m-dup+1为已联通的电脑个数
+```
+
+时间复杂度：$O(mlogn)$
+
+空间复杂度：$O(n)$
+
+#### [1631. 最小体力消耗路径](https://leetcode.cn/problems/path-with-minimum-effort/)
+
+将图中的所有边按照权值从小到大进行排序，并依次加入并查集中。当我们加入一条权值为 x 的边之后，如果左上角和右下角从非连通状态变为连通状态，那么 x即为答案。
+
+```python
+class Solution:
+    def minimumEffortPath(self, heights: List[List[int]]) -> int:
+        m, n = len(heights), len(heights[0])
+
+        fa = [-1]*(m*n)
+        
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x, y = find(x), find(y)
+            fa[x] = y
+        
+        edges = []
+        for i in range(m):
+            for j in range(n):
+                cur = n*i + j
+                if i+1<m:
+                    edges.append((cur, cur+n, abs(heights[i][j] - heights[i+1][j])))
+                if j+1<n:
+                    edges.append((cur, cur+1, abs(heights[i][j] - heights[i][j+1])))
+        
+        if not edges:
+            return 0
+        edges = sorted(edges, key=lambda x:x[2])
+
+        for idx, edge in enumerate(edges):
+            x, y = edge[0], edge[1]
+            if fa[x]==-1 and fa[y]==-1:
+                fa[x], fa[y] = y, y
+            elif fa[x]!=-1 and fa[y]==-1:
+                fa[y] = find(x)
+            elif fa[y]!=-1 and fa[x]==-1:
+                fa[x] = find(y)
+            else:
+                if find(x)!=find(y):
+                    union(x, y)
+
+            start, end = 0, m*n-1
+            if fa[start]!=-1 and fa[end]!=-1 and find(start)==find(end):
+                return edge[2]
+```
+
+时间复杂度：$O(m*n*log(m*n))$
+
+空间复杂度：$O(m*n)$
+
+#### [959. 由斜杠划分区域](https://leetcode.cn/problems/regions-cut-by-slashes/)
+
+```python
+class Solution:
+    def regionsBySlashes(self, grid: List[str]) -> int:
+        # 把每个正方形方格拆成四个三角形
+        n = len(grid)
+
+        fa = [i for i in range(n*n*4)]
+        self.res = n*n*4
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x, y = find(x), find(y)
+            if x!=y:
+                self.res -= 1
+                fa[x] = y
+        
+        for i, line in enumerate(grid):
+            for j in range(n):
+                char = line[j]
+                up = (i*n + j)*4
+                left = (i*n + j)*4 + 1
+                down = (i*n + j)*4 + 2
+                right = (i*n + j)*4 + 3
+
+                # 方格内合并
+                if char==' ':
+                    union(up, left)
+                    union(up, down)
+                    union(up, right)
+                elif char=='/':
+                    union(up, left)
+                    union(right, down)
+                elif char=='\\':
+                    union(up, right)
+                    union(left, down)
+                
+                if i-1>=0:
+                    up_down = ((i-1)*n + j)*4 + 2
+                    union(up, up_down)
+                if j+1<n:
+                    right_left =  (i*n + j+1)*4 + 1
+                    union(right, right_left)
+        
+        return self.res
+```
+
+时间复杂度：$O(n^2logn^2)$
+
+空间复杂度：$O(n^2)$
+
 # 算法
 
 
@@ -2685,6 +3165,38 @@ class Solution:
 时间复杂度：$O(n*k)$，$k$为t中不同字符的个数
 
 空间复杂度：$O(k)$
+
+#### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+滑动窗口+优先队列
+
+```python
+class Solution:
+    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:
+        n = len(nums)
+        heap = []
+        for i in range(k):
+            heapq.heappush(heap, (-1*nums[i], i))
+        
+        res = [0]*(n-k+1)
+        res[0] = -1*heap[0][0]
+        
+        i, j = 1, k
+        while j<n:
+            while heap and heap[0][1]<i:
+                heapq.heappop(heap)
+            
+            heapq.heappush(heap, (-1*nums[j], j))
+            res[i] = -1*heap[0][0]
+            i += 1
+            j += 1
+
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
 
 ## dfs
 
@@ -4979,6 +5491,49 @@ class Solution:
 
 空间复杂度：$O(m+n)$
 
+#### [338. 比特位计数](https://leetcode.cn/problems/counting-bits/)
+
+```python
+class Solution:
+    def countBits(self, n: int) -> List[int]:
+        res = [0]
+        highbit = 0
+        for i in range(1, n+1):
+            if i & (i-1) == 0:
+                highbit = i
+            
+            res.append(res[i-highbit]+1)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+### 树形dp
+
+#### [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)
+
+```python
+class Solution:
+    def rob(self, root: Optional[TreeNode]) -> int:
+        def dfs(root):
+            if not root:
+                return 0, 0
+            
+            left1, left2 = dfs(root.left)
+            right1, right2 = dfs(root.right)
+
+            return max(left1, left2)+max(right1, right2), root.val+left1+right1
+        
+        a, b = dfs(root)
+        return max(a, b)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 ### 其它
 
 #### [396. 旋转函数](https://leetcode-cn.com/problems/rotate-function/)
@@ -5072,6 +5627,112 @@ class Solution:
 时间复杂度：$O(n)$
 
 空间复杂度：$O(1)$
+
+#### [309. 最佳买卖股票时机含冷冻期](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+解法一：dfs爆搜（超时）
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        n = len(prices)
+        res = 0
+        def dfs(hold_idx, cur_day, cur_pro):
+            nonlocal res
+            res = max(res, cur_pro)
+            if hold_idx == -1:
+                # 未持有股票
+                for i in range(cur_day, n):
+                    dfs(i, i+1, cur_pro-prices[i]) # 在第i天买入股票
+            else:
+                for i in range(cur_day, n):
+                    if prices[i]>prices[hold_idx]:
+                        dfs(-1, i+2, cur_pro+prices[i]) # 在第i天卖掉股票
+        
+        dfs(-1, 0, 0)
+        return res
+```
+
+时间复杂度：
+
+解法二：dp
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        n = len(prices)
+        res = 0
+        dp = [[0 for _ in range(3)] for _ in range(n)]
+        dp[0][1] = 0-prices[0]
+        for i in range(1, n):
+            dp[i][0] = max(dp[i-1][0], dp[i-1][2]) # 不持有股票，且当天无卖出
+            dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]) # 持有股票,要么是昨天就持有，要么是昨天不持且不处于冷静且且今天买入
+            dp[i][2] = dp[i-1][1] + prices[i] # 不持有股票，当天卖出
+
+        return max(dp[n-1][0], dp[n-1][2])
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+优化空间复杂度：
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        n = len(prices)
+        res = 0
+        zero, one, two = 0, 0-prices[0], 0
+        for i in range(1, n):
+            zero, one, two = max(zero, two), max(one, zero-prices[i]), one+prices[i]
+
+        return max(zero, two)
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [312. 戳气球](https://leetcode.cn/problems/burst-balloons/)
+
+核心思想：$dp[i][j] = max(dp[i][k] + dp[k+1][j]), k \in [i, j-1]$
+
+```python
+class Solution:
+    def maxCoins(self, nums: List[int]) -> int:
+        n = len(nums)
+        if n==1:
+            return nums[0]
+
+        # dp[i][j]表示戳破nums(i-1:j), 即nums[i:j]之间的气球能获得的最大硬币数
+        dp = [[0 for _ in range(n+1)] for _ in range(n+1)]
+
+        for i in range(n, -1, -1):
+            for j in range(i+1, n+1):
+                tmp = 0
+                left, right = 1, 1
+                if i!=0:
+                    left = nums[i-1]              
+                if j!=n:
+                    right = nums[j]
+                
+                if j-i==1:
+                    dp[i][j] = left*right*nums[i]
+                    continue
+                
+                # 枚举k
+                for k in range(i, j):
+                    tmp = max(tmp, dp[i][k]+dp[k+1][j]+left*nums[k]*right)
+                
+                dp[i][j] = tmp
+        
+        return dp[0][n]
+```
+
+时间复杂度：$O(n^{3})$
+
+空间复杂度：$O(n^2)$
 
 ### 数学
 
@@ -5184,7 +5845,45 @@ def quick(arr, start, end):
     quick(arr, i+1, end)
 ```
 
+#### [347. 前 K 个高频元素](https://leetcode.cn/problems/top-k-frequent-elements/)
 
+```python
+class Solution:
+    def topKFrequent(self, nums: List[int], k: int) -> List[int]:
+        def qsort(arr, start, end):
+            if start>=end:
+                return
+            
+            pivot = arr[start]
+            i, j = start, end
+            while i<j:
+                while i<j and arr[j][1]<=pivot[1]:
+                    j-=1
+                arr[i] = arr[j]
+                while i<j and arr[i][1]>=pivot[1]:
+                    i+=1
+                arr[j] = arr[i]
+            
+            arr[i] = pivot
+            if k==i:
+                return
+            elif k<i:
+                qsort(arr, start, i-1)
+            else:
+                qsort(arr, i+1, end)
+        
+        m = dict()
+        for idx, num in enumerate(nums):
+            m[num] = m.get(num, 0) + 1
+        
+        t = [(key, val) for key, val in m.items()]
+        qsort(t, 0, len(t)-1)
+        return [item[0] for item in t[:k]]
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 ### 桶排
 
@@ -5201,6 +5900,8 @@ a & (1<<i) ==0，a的第i位是否为1
 a & b == 0 ，a和b是否正交
 
 a & ((1<<b) -1)，只取a的低b位，即a & (2^b -1 ) 
+
+a & (a-1) ==0，判断a是否为2的整数次幂
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
@@ -5978,7 +6679,150 @@ class Solution:
         return res
 ```
 
+时间复杂度：$O(n)$
 
+空间复杂度：$O(1)$
+
+#### [238. 除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/)
+
+```python
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        left, right = [0]*n, [0]*n
+
+        left[0] = 1 # left[i]代表nums[i]左侧的位置相乘
+        for i in range(1, n):
+            left[i] = left[i-1]*nums[i-1]
+        
+        right[n-1] = 1
+        for i in range(n-2, -1, -1):
+            right[i] = right[i+1]*nums[i+1]
+        
+        res = [0]*n
+        for i in range(n):
+            res[i] = left[i]*right[i]
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+优化空间复杂度：
+
+```python
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        res = [0]*n
+
+        res[0] = 1 # left[i]代表nums[i]左侧的位置相乘
+        for i in range(1, n):
+            res[i] = res[i-1]*nums[i-1]
+        
+        right = 1
+        for i in range(n-2, -1, -1):
+            right = right*nums[i+1]
+            res[i] = res[i]*right
+        
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [240. 搜索二维矩阵 II](https://leetcode.cn/problems/search-a-2d-matrix-ii/)
+
+```python
+class Solution:
+    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
+        m, n = len(matrix), len(matrix[0])
+
+        i, j = 0, n-1
+        while i<m and j>=0:
+            if matrix[i][j]>target:
+                j-=1
+            elif matrix[i][j]<target:
+                i+=1
+            else:
+                return True
+        return False
+```
+
+时间复杂度：$O(m+n)$
+
+空间复杂度：$O(1)$
+
+#### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+```python
+class Solution:
+    def moveZeroes(self, nums: List[int]) -> None:
+        n = len(nums)
+        i, j = 0, 0 # i记录下一个非零元素应该在的位置，j去遍历数组
+        while j<n:
+            if nums[j]!=0:
+                nums[i], nums[j] = nums[j], nums[i]
+                i+=1
+                j+=1
+            else:
+                j+=1
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [394. 字符串解码](https://leetcode.cn/problems/decode-string/)
+
+```python
+class Solution:
+    def decodeString(self, s: str) -> str:
+        def isdigit(char):
+            if ord('0')<=ord(char)<=ord('9'):
+                return True
+            return False
+
+        n = len(s)
+        i = 0
+        res = ""
+        while i<n:
+            if isdigit(s[i]):
+                num = 0
+                while isdigit(s[i]):
+                    num = num*10 + int(s[i])
+                    i+=1
+
+                left, right = 1, 0
+
+                i+=1 # "[" 
+                cur_str = ""                
+                while True:
+                    if s[i]=='[':
+                        left += 1
+                    elif s[i]==']':
+                        right += 1                   
+                    if left==right:
+                        break
+                    cur_str += s[i]
+                    i+=1
+               
+                res += self.decodeString(cur_str)*num
+            else:
+                res += s[i]   
+
+            i+=1
+        
+        return res   
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$，极端情况下递归会达到线性级别
 
 ## 二叉树路径和
 
