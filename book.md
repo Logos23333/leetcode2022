@@ -934,6 +934,28 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### [538. 把二叉搜索树转换为累加树](https://leetcode.cn/problems/convert-bst-to-greater-tree/)
+
+```python
+class Solution:
+    def convertBST(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        self.last = 0
+        def dfs(root):
+            if not root:
+                return
+            dfs(root.right)
+            root.val += self.last
+            self.last = root.val
+            dfs(root.left)
+
+        dfs(root)    
+        return root  
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 
 
 ### 遍历二叉树
@@ -1424,6 +1446,26 @@ class Solution:
 
 空间复杂度：$O(h)$，`h`为二叉树的高度。
 
+迭代写法：
+
+```python
+class Solution:
+    def mirrorTree(self, root: TreeNode) -> TreeNode:
+        if not root: return None
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            if node.left: stack.append(node.left)
+            if node.right: stack.append(node.right)
+            node.left, node.right = node.right, node.left
+        
+        return root
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 [剑指 Offer 28. 对称的二叉树](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/)
 
 一棵树对称的充分必要条件是，它的左子树和右子树互为镜像。
@@ -1618,6 +1660,92 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+#### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
+
+```python
+class Solution:
+    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
+        def dfs(root):
+            if not root:
+                return 0
+            
+            left = dfs(root.left)
+            right = dfs(root.right)
+
+            cur = left + right
+            self.res = max(self.res, cur)
+            return max(left, right) + 1
+        
+        self.res = 0
+        dfs(root)
+        return self.res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [617. 合并二叉树](https://leetcode.cn/problems/merge-two-binary-trees/)
+
+```python
+class Solution:
+    def mergeTrees(self, root1: Optional[TreeNode], root2: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root1:
+            return root2
+        if not root2:
+            return root1
+
+        def dfs(root1, root2):
+            root1.val += root2.val
+
+            if root2.left:
+                if root1.left:
+                    dfs(root1.left, root2.left)
+                else:
+                    root1.left = root2.left
+            
+            if root2.right:
+                if root1.right:
+                    dfs(root1.right, root2.right)
+                else:
+                    
+                    root1.right = root2.right
+            
+            return root1
+        
+        return dfs(root1, root2)
+```
+
+时间复杂度：$O(min(m, n))$
+
+空间复杂度：$O(min(m,n))$
+
+#### [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
+
+```python
+class Solution:
+    def sumNumbers(self, root: Optional[TreeNode]) -> int:
+        self.res = 0
+        def dfs(root, val):
+            if not root:
+                return
+            
+            val = val*10 + root.val
+            if not root.left and not root.right:
+                self.res += val
+                return
+            
+            dfs(root.left, val)
+            dfs(root.right, val)
+            
+        dfs(root, 0)
+        return self.res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 ## 队列
 ## 栈
 ### 单调栈
@@ -1698,6 +1826,58 @@ class Solution:
 ```
 
 时间复杂度：$O(m*n)$
+
+空间复杂度：$O(n)$
+
+#### [739. 每日温度](https://leetcode.cn/problems/daily-temperatures/)
+
+```python
+class Solution:
+    def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
+        n = len(temperatures)
+
+        res = [0]*n
+        stack = [] # 单调递减栈
+        for idx, t in enumerate(temperatures):
+            while stack and t>temperatures[stack[-1]]:
+                pop_idx = stack.pop() # 对于第pop_idx天而言，当前的idx对应的温度就是第一个比它大的温度
+                res[pop_idx] = idx-pop_idx
+            stack.append(idx)
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+### 辅助栈
+
+#### [剑指 Offer 09. 用两个栈实现队列](https://leetcode.cn/problems/yong-liang-ge-zhan-shi-xian-dui-lie-lcof/)
+
+```python
+class CQueue:
+
+    def __init__(self):
+        self.A, self.B = [], []
+
+
+    def appendTail(self, value: int) -> None:
+        self.A.append(value)
+
+
+    def deleteHead(self) -> int:
+        if self.B:
+            return self.B.pop()
+        if not self.A:
+            return -1
+        while self.A:
+            self.B.append(self.A.pop())
+        
+        return self.B.pop()
+```
+
+时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
 
@@ -2038,10 +2218,10 @@ class Solution:
 ```python
 class Solution:
     def regionsBySlashes(self, grid: List[str]) -> int:
-        # 把每个正方形方格拆成四个三角形
+        
         n = len(grid)
 
-        fa = [i for i in range(n*n*4)]
+        fa = [i for i in range(n*n*4)] # 把每个正方形方格拆成四个三角形
         self.res = n*n*4
         def find(x):
             if x!=fa[x]:
@@ -2074,6 +2254,7 @@ class Solution:
                     union(up, right)
                     union(left, down)
                 
+                # 分别与上面方格的down，右侧方格的left合并
                 if i-1>=0:
                     up_down = ((i-1)*n + j)*4 + 2
                     union(up, up_down)
@@ -2087,6 +2268,121 @@ class Solution:
 时间复杂度：$O(n^2logn^2)$
 
 空间复杂度：$O(n^2)$
+
+#### [778. 水位上升的泳池中游泳](https://leetcode.cn/problems/swim-in-rising-water/)
+
+解法一：并查集
+
+从并查集的角度来看，这道题和lc 1631是完全一样的，唯一需要修改的就是路径的消耗定义，在lc 1631中，路径的消耗为相邻结点差值的最大值，而在这题中，路径的消耗为路径结点的最大值
+
+```python
+class Solution:
+    def swimInWater(self, grid: List[List[int]]) -> int:
+        m, n = len(grid), len(grid[0])
+
+        fa = [-1]*(m*n)
+        
+        def find(x):
+            if x!=fa[x]:
+                fa[x] = find(fa[x])
+            return fa[x]
+        
+        def union(x, y):
+            x, y = find(x), find(y)
+            fa[x] = y
+        
+        edges = []
+        for i in range(m):
+            for j in range(n):
+                cur = n*i + j
+                if i+1<m:
+                    edges.append((cur, cur+n, max(grid[i][j], grid[i+1][j])))
+                if j+1<n:
+                    edges.append((cur, cur+1, max(grid[i][j], grid[i][j+1])))
+        
+        if not edges:
+            return 0
+        edges = sorted(edges, key=lambda x:x[2])
+
+        for idx, edge in enumerate(edges):
+            x, y = edge[0], edge[1]
+            if fa[x]==-1 and fa[y]==-1:
+                fa[x], fa[y] = y, y
+            elif fa[x]!=-1 and fa[y]==-1:
+                fa[y] = find(x)
+            elif fa[y]!=-1 and fa[x]==-1:
+                fa[x] = find(y)
+            else:
+                if find(x)!=find(y):
+                    union(x, y)
+
+            start, end = 0, m*n-1
+            if fa[start]!=-1 and fa[end]!=-1 and find(start)==find(end):
+                return edge[2]
+```
+
+时间复杂度：$O(n^2logn^2)$
+
+空间复杂度：$O(n^2)$
+
+## 数组
+
+#### [剑指 Offer 03. 数组中重复的数字](https://leetcode.cn/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
+
+```python
+class Solution:
+    def findRepeatNumber(self, nums: List[int]) -> int:
+        n = len(nums)
+        for idx, num in enumerate(nums):
+            if nums[num%n]>=n:
+                return num%n
+            nums[num%n] += n
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [448. 找到所有数组中消失的数字](https://leetcode.cn/problems/find-all-numbers-disappeared-in-an-array/)
+
+```python
+class Solution:
+    def findDisappearedNumbers(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        for idx, num in enumerate(nums):
+            nums[(num-1)%n] += n
+        
+        res = []
+        for i in range(n):
+            if nums[i]<=n:
+                res.append(i+1)
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode.cn/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
+
+```python
+class Solution:
+    def exchange(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        i, j = 0, n-1
+        while i<j:
+            while i<j and nums[i]%2==1:
+                i += 1
+            while i<j and nums[j]%2==0:
+                j -= 1
+            nums[i], nums[j] = nums[j], nums[i]
+        return nums
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 # 算法
 
@@ -2582,7 +2878,56 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+## 贪心
 
+#### [406. 根据身高重建队列](https://leetcode.cn/problems/queue-reconstruction-by-height/)
+
+按第一维度降序，第二维度升序排列后，就可以直接贪心的插入了，因为后面插入的数一定不会影响前面插入的数
+
+```python
+class Solution:
+    def reconstructQueue(self, people: List[List[int]]) -> List[List[int]]:
+        people = sorted(people, key=lambda x:(-x[0], x[1])) 
+
+        res = []
+        for idx, pair in enumerate(people):
+            res.insert(pair[1], pair)
+        
+        return res
+```
+
+时间复杂度：$O(n^2)$，插入的最差时间复杂度是$O(n)$
+
+空间复杂度：$O(logn)$，排序所需的空间
+
+#### [581. 最短无序连续子数组](https://leetcode.cn/problems/shortest-unsorted-continuous-subarray/)
+
+```python
+class Solution:
+    def findUnsortedSubarray(self, nums: List[int]) -> int:
+        n = len(nums)
+        right, maxn = -1, float('-inf')
+        left, minn = -1, float('inf')
+
+        for i in range(n):
+            if nums[i]<maxn:
+                # 说明左侧有比nums[i]更大的值
+                right = i
+            else:
+                maxn = nums[i]
+            
+            if nums[n-i-1]>minn:
+                # 说明右侧有比nums[n-i+1]更小的值
+                left = n-i-1
+            else:
+                minn = nums[n-i-1]
+
+        return 0 if right==-1 else right-left+1
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ## 滑动窗口
 
@@ -5534,6 +5879,224 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+### 数位dp
+
+#### [357. 统计各位数字都不同的数字个数](https://leetcode.cn/problems/count-numbers-with-unique-digits/)
+
+解法一：乘法原理
+
+```python
+class Solution:
+    def countNumbersWithUniqueDigits(self, n: int) -> int:
+        if n==0:
+            return 1
+        
+        res = 10 # 1位数对应的数量
+        cur, base = 9, 9 # 不存在前导0，所以第一位能使用的数字是9，第二位是9（可以使用0了），第三位是8，以此类推
+        for i in range(2, n+1):
+            cur, base = cur*base, base-1 # 求i位数对应的数量
+        
+            res += cur
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+解法二：数位dp
+
+这道题可以延申为求[x, y]范围内各位数字都不同的数字个数
+
+而res[x, y] = res[0, y] - res[0, x-1]
+
+```python
+def get(n):
+    if n==0:
+        return 1
+    res = 10
+    cur, last = 9, 9
+    for i in range(2, n+1):
+        cur, last = cur*last, last-1
+        res += cur
+    return res
+
+def dp(x):
+    if x==0:
+        return 1
+
+    res = 0
+    nums = []
+    while x!=0:
+        nums.append(x%10)
+        x //= 10
+    nums = nums[::-1]
+
+    # 位数小于x
+    n = len(nums)
+    res1 = get(n-1) # O(n)
+    res += res1
+
+    # 位数相同但最高位小于x
+    cur, last = nums[0]-1, 9
+    for i in range(2, n+1):
+        cur, last = cur*last, last-1
+    res += cur
+
+    # 位数相同，前i位和x相等
+    v = [False]*10
+    res3 = 0
+    for i in range(1, n):
+        if v[nums[i-1]]: break
+        v[nums[i-1]] = True
+
+        cur = sum([1 for j in range(nums[i]) if not v[j]]) 
+        last = sum([1 for j in range(10) if not v[j]]) - 1
+        for j in range(i+1, n):
+            cur, last = cur*last, last-1
+        res3 += cur
+    res3 = res3+1 if len(set(nums))==len(nums) else res3 # 自己
+    res += res3
+
+    return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [1012. 至少有 1 位重复的数字](https://leetcode.cn/problems/numbers-with-repeated-digits/)
+
+利用容斥原理，先算没有重复的数字个数
+
+```python
+class Solution:
+    def numDupDigitsAtMostN(self, n: int) -> int:
+        def dp(x):
+            if x<=10:
+                return x
+            # 返回[1, x]中没有重复数字的正整数个数
+            res = 0
+
+            nums = []
+            while x:
+                nums.insert(0, x%10)
+                x //= 10
+            
+            n = len(nums)
+            
+            # 小于n位的数字
+            cur, last = 9, 9
+            res1 = 9
+            for i in range(2, n):
+                cur, last = cur*last, last-1
+                res1+=cur
+            res += res1
+
+            # n位数字，最高位小于x
+            cur, last = nums[0]-1, 9
+            for i in range(2, n+1):
+                cur, last = cur*last, last-1
+            res += cur
+            
+            # n位数字，前i位等于x
+            res3 = 0
+            v = [False for _ in range(10)]
+            for i in range(1, n):
+                if v[nums[i-1]]: break
+                v[nums[i-1]] = True
+                cur = sum([1 for i in range(nums[i]) if not v[i]])
+                last = sum([1 for i in range(10) if not v[i]]) - 1
+ 
+                for j in range(i+1, n):
+                    cur, last = cur*last, last-1
+                res3 += cur
+            
+            res3 = res3+1 if len(set(nums))==len(nums) else res3
+            res += res3
+            
+            return res
+        
+        return n-dp(n)
+```
+
+时间复杂度：$O(n)$,n为数字的位数
+
+空间复杂度：$O(n)$
+
+#### [600. 不含连续1的非负整数](https://leetcode.cn/problems/non-negative-integers-without-consecutive-ones/)
+
+```python
+class Solution:
+    def findIntegers(self, n: int) -> int:
+        if n==1: return 2
+        if n==2: return 3
+
+        length = len(bin(n))-2 # 去掉开头的0b
+        dp = [0 for _ in range(length+1)]
+        dp[0], dp[1] = 1, 2 # dp[i]表示 [0, 1<<i]区间内不包含连续的1的个数
+        for i in range(2, length+1):
+            dp[i] = dp[i-1] + dp[i-2]
+        
+        # 对n的每一位进行处理:
+        # 如果当前位为1，说明可以通过将其置为0的方式使整个数变小
+        # 如果当前位为0，则不用处理，因为在前面高位时已经处理过当前位数为1的情况
+        res = 0
+        is_valid = True
+        for i in range(length, -1, -1):
+            mask = 1<<i
+            if n & mask: # 第i位为1
+                res += dp[i]
+                if n & 1<<(i+1): # 遇到了两个连续的1，直接剪枝
+                    is_valid = False
+                    break
+        return res+1 if is_valid else res # 算上自己
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(logn)$
+
+#### [902. 最大为 N 的数字组合](https://leetcode.cn/problems/numbers-at-most-n-given-digit-set/)
+
+```python
+class Solution:
+    def atMostNGivenDigitSet(self, digits: List[str], n: int) -> int:
+        nums = [int(char) for char in str(n)]
+        digits = [int(char) for char in digits]
+
+        length = len(nums)
+        res = 0
+
+        # 位数小于n的
+        res1 = 0
+        for i in range(1, length):
+            res1 += len(digits)**(i)
+        res += res1
+
+        # 位数等于n，第i位小于n
+        res2 = 0
+        lock = True
+        for i in range(length):
+            if lock:
+                cur = sum([1 for num in digits if num<nums[i]]) # 在digits中选一个比nums[i]小的数，数量为cur
+                if nums[i]<min(digits): break # 在digits中没有小于nums[i]的数，直接剪枝即可
+                tmp = cur * (len(digits)**(length-i-1)) # 固定了前i位数，第i位数的可选个数为cur,后面的可选数数量为len(digits)
+                res2 += tmp
+                if nums[i] not in digits:
+                    lock = False # 在第i位找不到和nums[i]相同的数，后面不用计算cur了
+            else:
+                tmp = len(digits)**(length-i) # 不用计算cur了
+
+        res += res2
+
+        return res+1 if len(set(nums)-set(digits))==0 else res
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(logn)$
+
 ### 其它
 
 #### [396. 旋转函数](https://leetcode-cn.com/problems/rotate-function/)
@@ -5694,6 +6257,27 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        buy1, sell1 = -prices[0], 0
+        buy2, sell2 = -prices[0], 0
+        n = len(prices)
+        for i in range(1, n):
+            buy1 = max(buy1, -prices[i])
+            sell1 = max(sell1, buy1+prices[i])
+            buy2 = max(buy2, sell1-prices[i])
+            sell2 = max(sell2, buy2+prices[i])
+        
+        return max(0, max(sell1, sell2))
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 #### [312. 戳气球](https://leetcode.cn/problems/burst-balloons/)
 
 核心思想：$dp[i][j] = max(dp[i][k] + dp[k+1][j]), k \in [i, j-1]$
@@ -5781,6 +6365,24 @@ class Solution:
 ```
 
 时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [剑指 Offer 14- I. 剪绳子](https://leetcode.cn/problems/jian-sheng-zi-lcof/)
+
+将绳子尽可能的分成3xn的形式，然后分别讨论
+
+```python
+class Solution:
+    def cuttingRope(self, n: int) -> int:
+        if n<=3: return n-1
+        a, b = n//3, n%3
+        if b==0: return 3**a
+        if b==1: return 3**(a-1)*4
+        if b==2: return (3**a)*2
+```
+
+时间复杂度：$O(1)$
 
 空间复杂度：$O(1)$
 
@@ -5901,7 +6503,7 @@ a & b == 0 ，a和b是否正交
 
 a & ((1<<b) -1)，只取a的低b位，即a & (2^b -1 ) 
 
-a & (a-1) ==0，判断a是否为2的整数次幂
+a & (a-1) ==0，将最右边的1变成0，可用于判断a是否为2的整数次幂
 
 | 题目                                                         | 难度   | 链接                                                         |
 | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
@@ -5917,6 +6519,16 @@ class Solution(object):
     def hammingWeight(self, n):
         ret = sum(1 for i in range(32) if n & (1 << i))
         return ret      
+```
+
+```python
+class Solution:
+    def hammingWeight(self, n: int) -> int:
+        res = 0
+        while n:
+            res+=1
+            n &= (n-1)
+        return res
 ```
 
 #### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
@@ -5997,6 +6609,31 @@ class Solution(object):
         res = dfs(abs(a), abs(b))
         return res if flag else -1*res
 ```
+
+#### [剑指 Offer 16. 数值的整数次方](https://leetcode.cn/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+
+可把n看作二进制形式，bi就是第i位对应的值
+
+$x^n = x^{1b1+2b2+4b3+...+2^{m-1}bm} = x^{1b1}*x^{2b2}*...*x^{2^{m-1}bm}$
+
+```python
+class Solution:
+    def myPow(self, x: float, n: int) -> float:
+        if n<0: return self.myPow(1/x, -n)
+        if n==0: return 1
+        
+        res = 1
+        while n:
+            if n & 1: res*=x # bi
+            x*=x # 2的m-1次方
+            n>>=1
+        
+        return res
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(1)$
 
 ## 图论
 
@@ -6353,7 +6990,7 @@ class Solution:
                     dp[i][j] = dp[i-1][j-1]
                 else:
                     if p[j-1] == '*':
-                        dp[i][j] = dp[i][j-2] or dp[i][j-1] or (dp[i-1][j] and (s[i-1]==p[j-2] or p[j-2]=='.')) # 分别对应匹配0,1,2个字符的情况
+                        dp[i][j] = dp[i][j-2] or (dp[i-1][j] and (s[i-1]==p[j-2] or p[j-2]=='.')) # 分别对应匹配0,1,2个字符的情况
         # print(dp)
         return dp[m][n]
 ```
@@ -6824,11 +7461,39 @@ class Solution:
 
 空间复杂度：$O(n)$，极端情况下递归会达到线性级别
 
-## 二叉树路径和
+
 
 ## 模拟题
 
+#### [剑指 Offer 29. 顺时针打印矩阵](https://leetcode.cn/problems/shun-shi-zhen-da-yin-ju-zhen-lcof/)
 
+```python
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        if not matrix: return []
+        m, n = len(matrix), len(matrix[0])
+
+        up, down, left, right = 0, m-1, 0, n-1
+        res = []
+        while True:      
+            for i in range(left, right+1): res.append(matrix[up][i])
+            up+=1
+            if up>down: break
+            for i in range(up, down+1): res.append(matrix[i][right])
+            right-=1
+            if left>right: break
+            for i in range(right, left-1, -1): res.append(matrix[down][i])
+            down-=1
+            if up>down: break
+            for i in range(down, up-1, -1): res.append(matrix[i][left])
+            left+=1
+            if left>right: break
+        return res
+```
+
+时间复杂度：$O(m*n)$
+
+空间复杂度：$O(1)$
 
 
 # 脑筋急转弯题
