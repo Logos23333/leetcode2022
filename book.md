@@ -351,16 +351,6 @@ class Solution:
 
 建议直接做剑指offer的链表题，都十分经典。
 
-| 题目                                                         | 难度   | 链接                                                         |
-| :----------------------------------------------------------- | ------ | ------------------------------------------------------------ |
-| [剑指 Offer 18. 删除链表的节点](https://leetcode-cn.com/problems/shan-chu-lian-biao-de-jie-dian-lcof/) | Easy   | https://leetcode-cn.com/problems/shan-chu-lian-biao-de-jie-dian-lcof/ |
-| [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/) | Easy   | https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/   |
-| [剑指 Offer 25. 合并两个排序的链表](https://leetcode-cn.com/problems/he-bing-liang-ge-pai-xu-de-lian-biao-lcof/) | Easy   | https://leetcode-cn.com/problems/he-bing-liang-ge-pai-xu-de-lian-biao-lcof/ |
-| [剑指 Offer 35. 复杂链表的复制](https://leetcode-cn.com/problems/fu-za-lian-biao-de-fu-zhi-lcof/) | Medium | https://leetcode-cn.com/problems/fu-za-lian-biao-de-fu-zhi-lcof/ |
-| [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/) | Medium | https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/ |
-| [160. 相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/) | Easy   | https://leetcode-cn.com/problems/intersection-of-two-linked-lists/ |
-| [445. 两数相加 II](https://leetcode-cn.com/problems/add-two-numbers-ii/) | Medium | https://leetcode-cn.com/problems/add-two-numbers-ii/         |
-
 #### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
 
 ```python
@@ -447,14 +437,73 @@ class Solution:
 
 空间复杂度：$O(k)$，最小堆的大小
 
+#### [剑指 Offer 35. 复杂链表的复制](https://leetcode.cn/problems/fu-za-lian-biao-de-fu-zhi-lcof/)
+
+解法一：哈希表，建议从old→new的映射
+
+```python
+class Solution:
+    def copyRandomList(self, head: 'Node') -> 'Node':
+        if not head: return None
+        m = {} # 建立从old到new的映射
+
+        new_head = Node(-1)
+        new_cur, old_cur = new_head, head
+        while old_cur:
+            new_cur.next = Node(old_cur.val)
+            m[old_cur] = new_cur.next
+            new_cur, old_cur = new_cur.next, old_cur.next
+        
+        cur = head
+        while cur:
+            if cur.random:
+                m[cur].random = m[cur.random]
+            cur = cur.next
+        
+        return m[head]
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+解法二：
+
+```python
+class Solution:
+    def copyRandomList(self, head: 'Node') -> 'Node':
+        if not head: return None
+        cur = head
+        while cur:
+            new_node = Node(cur.val)
+            tmp = cur.next
+            cur.next = new_node
+            new_node.next = tmp
+            cur = tmp
+        
+        cur = head
+        while cur:
+            if cur.random:
+                cur.next.random = cur.random.next
+            cur = cur.next.next
+        
+        new_head = Node(-1)
+        new, old = new_head, head
+        while old and old.next:
+            new.next = old.next
+            new = new.next
+            tmp = old.next.next
+            old.next = tmp
+            old = tmp
+            
+        return new_head.next
+```
+
+
+
 ### 快慢指针
 
 链表题中有一部分可以用快慢指针做，比较常见，建议熟练掌握。
-
-| 题目                                                         | 难度   | 链接                                                         |
-| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
-| [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/) | Easy   | https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/ |
-| [142. 环形链表 II](https://leetcode-cn.com/problems/linked-list-cycle-ii/) | Medium | https://leetcode-cn.com/problems/linked-list-cycle-ii/       |
 
 #### [148. 排序链表](https://leetcode-cn.com/problems/sort-list/)
 
@@ -760,30 +809,54 @@ class Solution(object):
 
 #### [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/)
 
+解法一：递归
+
 ```python
 class Solution:
     def verifyPostorder(self, postorder: List[int]) -> bool:
-        n = len(postorder)
-        if n<3:
-            return True
-        root = postorder[-1]
-        # 找到第一个比root大的值，此值左边为左子树，右边为右子树，递归判断即可
-        idx = 0
-        right_idx = -1
-        while idx<n-1:
-            if right_idx!=-1: # 此时已经找到第一个比root大的值
-                if postorder[idx]<root: # 它右边还是有比root小的，必定不满足二叉搜索树
-                    return False
-            if postorder[idx]>root:
-                right_idx = idx
-                break
-            idx+=1
-        return self.verifyPostorder(postorder[:idx]) and self.verifyPostorder(postorder[idx:-1])
+        
+        def is_valid(nums):
+            if len(nums)<=3: return True # 结点数小于等于3的二叉搜索树必定满足条件
+            root = nums[-1]
+
+            # 找到第一个比root大的值，此值左边为左子树，右边为右子树，递归判断即可
+            split = -1
+            for idx, num in enumerate(nums):
+                if num>=root and split==-1: # 找到了第一个比root大的值
+                    split = idx
+                elif split!=-1:
+                    if num<root: # 在右子树找到了比root大的值
+                        return False
+            return is_valid(nums[:split]) and is_valid(nums[split:-1])
+        
+        return is_valid(postorder)
 ```
 
 时间复杂度：$O(n^2)$。每次都要遍历整个数组，最坏的情况下要遍历n次。
 
 空间复杂度：$O(n)$。压栈也会占用空间。
+
+解法二：单调栈
+
+```python
+class Solution:
+    def verifyPostorder(self, postorder: List[int]) -> bool:
+        
+        stack, root = [], float('inf')
+        n = len(postorder)
+        for i in range(n-1, -1, -1): # 倒序遍历，此时顺序为根右左
+            if postorder[i]>root: # 左子树的值大于root
+                return False
+            while stack and postorder[i]<stack[-1]:
+                root = stack.pop() # root记录上一个最大值
+            stack.append(postorder[i])
+        
+        return True
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 #### [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/)
 
@@ -863,6 +936,31 @@ class Solution(object):
 时间复杂度：$O(n)$，每个节点都需要访问一次。
 
 空间复杂度：$O(h)$，其中h为树的高度，也就是递归时栈的开销。
+
+```
+class Solution:
+    def treeToDoublyList(self, root: 'Node') -> 'Node':
+        self.pre = None
+        self.head = None
+        
+        def dfs(root):
+            if not root: return
+            
+            dfs(root.left)
+            if not self.pre: 
+                self.head = root
+            else:
+                self.pre.right, root.left = root, self.pre
+            self.pre = root
+            dfs(root.right)
+        
+        dfs(root)
+        self.pre.left = self.head
+        self.head.right = self.pre
+        return self.head
+```
+
+
 
 #### [96. 不同的二叉搜索树](https://leetcode-cn.com/problems/unique-binary-search-trees/)
 
@@ -1050,6 +1148,7 @@ class Solution:
             return []
         queue = deque([root])
         res = []
+        left = True
         while queue:
             tmp = []
             queue_len = len(queue)
@@ -1060,7 +1159,48 @@ class Solution:
                     queue.append(cur.left)
                 if cur.right:
                     queue.append(cur.right)
-            res.append(tmp[::-1])
+            if left:
+                res.append(tmp)
+            else:
+                res.append(tmp[::-1])
+            left = not left
+        return res
+```
+
+时间复杂度：$O(n)$。`n`为树中节点的个数。每个节点都需要出队入队一次。倒序操作的时间复杂度也为$O(n)$，因为每个节点都只需要倒一次。
+
+空间复杂度：$O(n)$。若二叉树为满二叉树，最后一层的节点个数为`n/2`。
+
+```python
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[List[int]]:
+        if not root:
+            return []
+        queue = deque([root])
+        res = []
+        left = True
+        while queue:
+            tmp = []
+            queue_len = len(queue)
+            for i in range(queue_len):
+                cur = queue.popleft()
+                tmp.append(cur.val)
+                if cur.left: queue.append(cur.left)
+                if cur.right: queue.append(cur.right)
+                
+            res.append(tmp)
+            if not queue: break
+
+            tmp = []
+            queue_len = len(queue)
+            for i in range(queue_len):
+                cur = queue.pop() # pop出尾部结点
+                tmp.append(cur.val)
+                if cur.right: # 先右再左，而且是添加到头部
+                    queue.appendleft(cur.right)
+                if cur.left:
+                    queue.appendleft(cur.left)
+            res.append(tmp)
         return res
 ```
 
@@ -4709,14 +4849,6 @@ def solution():
 
 ### 背包问题
 
-| 题目                                                         | 难度   | 链接                                                         |
-| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
-| [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/) | Medium | https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/ |
-| [474. 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/) | Medium | https://leetcode-cn.com/problems/ones-and-zeroes/            |
-| [879. 盈利计划](https://leetcode-cn.com/problems/profitable-schemes/) | Hard   | https://leetcode-cn.com/problems/profitable-schemes/         |
-| [494. 目标和](https://leetcode-cn.com/problems/target-sum/)  | Medium | https://leetcode-cn.com/problems/target-sum/                 |
-| [1049. 最后一块石头的重量 II](https://leetcode-cn.com/problems/last-stone-weight-ii/) | Medium | https://leetcode-cn.com/problems/last-stone-weight-ii/       |
-
 #### [1155. 掷骰子的N种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
 
 朴素转移方程：$dp[i][j] = dp[i-1][j-1] + ...+ dp[i-1][j-k]$
@@ -7494,6 +7626,53 @@ class Solution:
 时间复杂度：$O(m*n)$
 
 空间复杂度：$O(1)$
+
+#### [剑指 Offer 31. 栈的压入、弹出序列](https://leetcode.cn/problems/zhan-de-ya-ru-dan-chu-xu-lie-lcof/)
+
+```python
+class Solution:
+    def validateStackSequences(self, pushed: List[int], popped: List[int]) -> bool:
+        stack = []
+        n = len(pushed)
+        i, j = 0, 0 # 分别遍历pushed和poped
+        while i<n and j<n:
+            if not stack or stack[-1]!=popped[j]:
+                stack.append(pushed[i])
+                i+=1
+            elif stack and stack[-1]==popped[j]:
+                stack.pop()
+                j+=1
+        
+        while stack and j<n and stack[-1]==popped[j]:
+            stack.pop()
+            j+=1
+            
+        if stack: return False
+        return True
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+这里附一个评论区更加简洁的代码：
+
+```python
+class Solution:
+    def validateStackSequences(self, pushed: List[int], popped: List[int]) -> bool:
+        stack = []
+        i = 0
+        for num in pushed:
+            stack.append(num)
+            while stack and stack[-1]==popped[i]:
+                stack.pop()
+                i+=1
+        return not stack
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
 
 
 # 脑筋急转弯题
