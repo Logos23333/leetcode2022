@@ -2524,6 +2524,29 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [剑指 Offer 39. 数组中出现次数超过一半的数字](https://leetcode.cn/problems/shu-zu-zhong-chu-xian-ci-shu-chao-guo-yi-ban-de-shu-zi-lcof/)
+
+摩尔投票法
+
+```python
+class Solution:
+    def majorityElement(self, nums: List[int]) -> int:
+        candidate, cnt = 0, 0
+        for num in nums:
+            if cnt==0: candidate = num
+            if candidate==num:
+                cnt+=1
+            else:
+                cnt-=1
+        return candidate
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+
+
 # 算法
 
 
@@ -2930,6 +2953,29 @@ class Solution:
 
 空间复杂度：O(log(m+n)) 算上递归的空间消耗
 
+#### [剑指 Offer 53 - I. 在排序数组中查找数字 I](https://leetcode.cn/problems/zai-pai-xu-shu-zu-zhong-cha-zhao-shu-zi-lcof/)
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        def find(arr, target):
+            n = len(arr)
+            i, j = 0, n
+            while i<j:
+                m = i+(j-i)//2
+                if arr[m]>=target:
+                    j = m
+                else:
+                    i = m+1
+            return i
+        
+        return find(nums, target+1)-find(nums, target)
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(1)$
+
 ## 双指针
 
 #### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
@@ -3012,6 +3058,27 @@ class Solution:
                 nums[p], nums[i] = nums[i], nums[p]
                 i+=1
             p+=1
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [剑指 Offer 57. 和为s的两个数字](https://leetcode.cn/problems/he-wei-sde-liang-ge-shu-zi-lcof/)
+
+```python
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        n = len(nums)
+        i, j = 0, n-1
+        while i<j:
+            cur = nums[i]+nums[j]
+            if cur>target:
+                j-=1
+            elif cur<target:
+                i+=1
+            else:
+                return [nums[i], nums[j]]
 ```
 
 时间复杂度：$O(n)$
@@ -3683,6 +3750,55 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+滑动窗口+单调队列
+
+```
+class Solution:
+    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:
+        n = len(nums)
+        stack = deque() # 单调递减队列
+        for i in range(k):
+            while stack and stack[-1]<nums[i]:
+                stack.pop()
+            stack.append(nums[i])
+        
+        res = [stack[0]]
+        for i in range(n-k):
+            if stack[0] == nums[i]: # 只需要删除一次即可
+                stack.popleft()
+            while stack and stack[-1]<nums[i+k]: # 维护队列单调递减的特性
+                stack.pop()
+            stack.append(nums[i+k])
+            res.append(stack[0])
+            i+=1
+        return res
+```
+
+时间复杂度：$O(n*k)$
+
+空间复杂度：$O(k)$
+
+#### [剑指 Offer 57 - II. 和为s的连续正数序列](https://leetcode.cn/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof/)
+
+```python
+class Solution:
+    def findContinuousSequence(self, target: int) -> List[List[int]]:
+        i, j, s, res = 1, 2, 1, []
+        while j<target:
+            s += j
+            while s>target:
+                s -= i
+                i += 1
+            if s==target:
+                res.append(list(range(i, j+1)))
+            j += 1
+        return res
+```
+
+时间复杂度：$O(target)$
+
+空间复杂度：$O(1)$
+
 ## dfs
 
 #### [78. 子集](https://leetcode.cn/problems/subsets/)
@@ -3778,7 +3894,32 @@ class Solution:
 
 空间复杂度：$O(M*N)$
 
+#### [剑指 Offer 38. 字符串的排列](https://leetcode.cn/problems/zi-fu-chuan-de-pai-lie-lcof/)
 
+```python
+class Solution:
+    def permutation(self, s: str) -> List[str]:
+        self.res = []
+        n = len(s)
+        s = sorted(s)
+        def dfs(state, path):
+            if len(path) == n:
+                self.res.append(''.join(path))
+                return
+
+            for i in range(n):
+                cur = 1<<i
+                if cur & state: continue
+                if i>0 and s[i]==s[i-1] and not state&(1<<(i-1)): continue # 如果该字符与上一个字符相同，且上一个字符没有使用过，说明是个重复状态
+                dfs(state|cur, path+[s[i]])
+        
+        dfs(0, [])
+        return self.res
+```
+
+时间复杂度：$O(n*n!)$
+
+空间复杂度：$O(n)$
 
 ### 博弈论
 
@@ -5150,6 +5291,50 @@ class Solution(object):
 
 空间复杂度: $O(\sum stones[i]/2)$
 
+#### [剑指 Offer 60. n个骰子的点数](https://leetcode.cn/problems/nge-tou-zi-de-dian-shu-lcof/)
+
+```python
+def dicesProbability_(self, n: int):
+    dp = [[0.0 for _ in range(n*6 + 1)] for _ in range(n)]
+    dp[0][:7] = [0.0, 1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+
+    for i in range(1, n):
+        for j in range(i+1, (i+1)*6 + 1):
+            dp[i][j] = dp[i][j-1] + dp[(i-1)][j-1]/6
+            if j-7>=0:
+                dp[i][j] -= dp[(i-1)][j-7]/6
+
+    return dp[(n-1)][n:n*6+1]
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(n^2)$
+
+优化时间复杂度：
+
+```python
+class Solution:
+    def dicesProbability(self, n: int) -> List[float]:
+        dp = [[0.0 for _ in range(n*6 + 1)] for _ in range(2)]
+        dp[0][:7] = [0.0, 1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+
+        for i in range(1, n):
+            for j in range(i+1): # 注意这里要把前面置为0
+                dp[i&1][j] = 0.0
+            for j in range(i+1, (i+1)*6 + 1):
+                dp[i&1][j] = dp[i&1][j-1] + dp[(i-1)&1][j-1]/6
+                if j-7>=0:
+                    dp[i&1][j] -= dp[(i-1)&1][j-7]/6
+            # print(dp)
+        
+        return dp[(n-1)&1][n:n*6+1]
+```
+
+时间复杂度：$O(n^2)$
+
+空间复杂度：$O(n)$
+
 ### LCS和LIS问题
 
 [宫水三叶:LCS 问题与 LIS 问题的相互关系，以及 LIS 问题的最优解证明](https://mp.weixin.qq.com/s?__biz=MzU4NDE3MTEyMA==&mid=2247487814&idx=1&sn=e33023c2d474ff75af83eda1c4d01892&chksm=fd9cba59caeb334f1fbfa1aefd3d9b2ab6abfccfcab8cb1dbff93191ae9b787e1b4681bbbde3&token=252055586&lang=zh_CN#rd)
@@ -5190,7 +5375,7 @@ def solution(nums):
     n = len(nums)
     # dp[i]表示以nums[i]结尾的最长递增子序列长度
     dp = [0 for i in range(n)]
-    dp[1] = 1
+    dp[0] = 1
 
     # g[i]表示上升子序列长度为i的最小结尾元素
     g = [float('inf') for i in range(n+1)]
@@ -6229,6 +6414,74 @@ class Solution:
 
 空间复杂度：$O(logn)$
 
+#### [233. 数字 1 的个数](https://leetcode.cn/problems/number-of-digit-one/)
+
+```python
+class Solution:
+    def countDigitOne(self, n: int) -> int:
+        nums = []
+        while n:
+            nums.append(n%10)
+            n//=10
+        nums = nums[::-1]
+
+        def get(nums):
+            res = 0
+            for num in nums:
+                res = res*10+num
+            return res
+
+        m = len(nums)
+        res = 0
+        for i in range(m):
+            # 计算第i位的1的个数
+            prefix = nums[:i]
+            postfix = nums[i+1:]
+            prefix_num = get(prefix)
+            postfix_num = get(postfix)
+            # 当prefix小于当前数字的prefix时，必定满足大小要求
+            res += prefix_num*(10**(m-i-1))
+			
+            # 固定prefix
+            if nums[i]==0: # 第i位为0，该位置不可能为1
+                continue
+            elif nums[i]==1: # 第i位为1，为满足大小要求，后缀一定要小于postfix
+                res += postfix_num+1
+            else: # 第i位大于1，后面m-i-1位任选
+                res += 10**(m-i-1)
+        
+        return res
+```
+
+时间复杂度：$O(m)$
+
+空间复杂度：$O(m)$
+
+#### [剑指 Offer 44. 数字序列中某一位的数字](https://leetcode.cn/problems/shu-zi-xu-lie-zhong-mou-yi-wei-de-shu-zi-lcof/)
+
+```python
+class Solution:
+    def findNthDigit(self, n: int) -> int:
+        if n<10: return n
+        cur = 1
+        i = 0 # 代表当前数字的位数
+        while cur<n:
+            cur += 9*(10**(i))*(i+1)
+            i+=1
+        
+        base = cur - 9*(10**(i-1))*i
+        idx = (n-base)//i# i位数的第idx个数
+        num_idx = (n-base)%i # 第idx个数的第num_idx位
+
+        num = 10**(i-1) + idx
+        return int(str(num)[num_idx])
+        
+```
+
+时间复杂度：$O(m)$
+
+空间复杂度：$O(1)$
+
 ### 其它
 
 #### [396. 旋转函数](https://leetcode-cn.com/problems/rotate-function/)
@@ -6450,11 +6703,65 @@ class Solution:
 
 空间复杂度：$O(n^2)$
 
+#### [188. 买卖股票的最佳时机 IV](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+```python
+class Solution:
+    def maxProfit(self, k: int, prices: List[int]) -> int:
+        if not prices or k==0: return 0
+        n = len(prices)
+        dp = [[0 for _ in range(k*2)] for _ in range(n)]
+
+        for i in range(k):
+            dp[0][i*2] = -prices[0]
+        
+        for i in range(1, n):
+            dp[i][0] = max(dp[i-1][0], -prices[i])
+            for j in range(1, k*2, 2):
+                dp[i][j] = max(dp[i-1][j], dp[i-1][j-1]+prices[i])
+            for j in range(2, k*2, 2):
+                dp[i][j] = max(dp[i-1][j], dp[i-1][j-1]-prices[i])
+        
+        return max(dp[n-1])
+```
+
+时间复杂度：$O(n*k)$
+
+空间复杂度：$O(n*k)$
+
+```python
+class Solution:
+    def maxProfit(self, k: int, prices: List[int]) -> int:
+        if not prices or k==0: return 0
+        n = len(prices)
+        dp = [[0 for _ in range(k*2)] for _ in range(2)]
+
+        for i in range(k):
+            dp[0][i*2] = -prices[0]
+        
+        for i in range(1, n):
+            dp[i&1][0] = max(dp[(i-1)&1][0], -prices[i])
+            for j in range(1, k*2, 2):
+                dp[i&1][j] = max(dp[(i-1)&1][j], dp[(i-1)&1][j-1]+prices[i])
+            for j in range(2, k*2, 2):
+                dp[i&1][j] = max(dp[(i-1)&1][j], dp[(i-1)&1][j-1]-prices[i])
+        
+        return max(dp[(n-1)&1])
+```
+
+时间复杂度：$O(n*k)$
+
+空间复杂度：$O(k)$
+
 ### 数学
 
 #### [剑指 Offer 62. 圆圈中最后剩下的数字](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/) （约瑟夫环）
 
 f(n,m)在首轮删除了一个数后后变成了f(n-1, m)问题，只是初始位置发生了变化。
+
+定义f(n,m,t)为n个数字，每次走m步，初始位置在t，最后剩下的数字，有
+
+$f(n,m,0) = f(n-1,m,m) = f(n-1,m,0)+m$
 
 ```python
 class Solution(object):
@@ -6517,6 +6824,94 @@ class Solution:
 时间复杂度：$O(1)$
 
 空间复杂度：$O(1)$
+
+#### [剑指 Offer 49. 丑数](https://leetcode.cn/problems/chou-shu-lcof/)
+
+```python
+class Solution:
+    def nthUglyNumber(self, n: int) -> int:
+        dp = [0 for _ in range(n)]
+        dp[0] = 1
+        a, b, c = 0, 0, 0
+        for i in range(1, n):
+            dp[i] = min(dp[a]*2, min(dp[b]*3, dp[c]*5))
+            if dp[i]==dp[a]*2: a+=1
+            if dp[i]==dp[b]*3: b+=1
+            if dp[i]==dp[c]*5: c+=1
+        
+        return dp[n-1]
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+## 快速幂
+
+计算一个数的n次幂时可以用快速幂求解
+
+递归写法：
+
+```python
+def qpow(a, n):
+    if n==1: return a
+    if n&1:
+        return a*qpow(a, n-1)
+    else:
+        tmp = qpow(a, n//2)
+        return tmp*tmp
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(logn)$
+
+迭代写法：
+
+把n看作二进制数
+
+```python
+def qpow_iter(a, n):
+    res = 1
+    while n:
+        if n&1:
+            res *= a
+        a*=a
+        n>>=1
+    return res
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(1)$
+
+矩阵的快速幂：
+
+```python
+def mul(a, b):
+    m, n, o = len(a), len(a[0]), len(b[0])
+    res = [[0 for _ in range(o)] for _ in range(m)]
+    for i in range(m):
+        for j in range(o):
+            for k in range(n):
+                res[i][j] += a[i][k]*b[k][j]
+    return res
+                
+def qpow(a, n):
+    res = [[1, 0], [0, 1]] # 单位矩阵
+    while n:
+        if n&1:
+            res = mul(res, a)
+        a = mul(a, a)
+        n>>=1
+    return res
+```
+
+时间复杂度：$O(logn)$
+
+空间复杂度：$O(1)$
+
+
 
 ## 排序
 
@@ -6616,6 +7011,119 @@ class Solution:
 ```
 
 时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
+#### [剑指 Offer 40. 最小的k个数](https://leetcode.cn/problems/zui-xiao-de-kge-shu-lcof/)
+
+```python
+class Solution:
+    def getLeastNumbers(self, arr: List[int], k: int) -> List[int]:
+        def quick(arr, start, end):
+            if start>=end: return
+
+            i, j = start, end
+            pivot = arr[start]
+            while i<j:
+                while i<j and arr[j]>=pivot:
+                    j-=1
+                arr[i] = arr[j]
+                while i<j and arr[i]<pivot:
+                    i+=1
+                arr[j] = arr[i]
+            
+            arr[i] = pivot
+            # 正确写法
+            if k<i:
+                quick(arr, start, i)
+            elif k>i:
+                quick(arr, start, i-1)
+                quick(arr, i+1, end)
+            elif k==i:
+                return
+            # 错误写法
+            # 只能以pivot为界分治
+            # if k<i:
+            #    quick(arr, start, k)
+            # elif k>i:
+            #     quick(arr, start, i-1)
+            #    quick(arr, i+1, k-1)
+            
+    
+        quick(arr, 0, len(arr)-1)
+        return arr[:k]
+```
+
+### 归并排序
+
+```python
+def mergeSort(arr, l, r):
+    if l>=r: return
+    m = (l+r)//2
+    mergeSort(arr, l, m)
+    mergeSort(arr, m+1, r)
+    tmp[l:r+1] = arr[l:r+1]
+    i, j = l, m+1
+    for k in range(l, r+1):
+        if i==m+1:
+            arr[k] = tmp[j]
+            j+=1
+        elif j==r+1:
+            arr[k] = tmp[i]
+            i+=1
+        elif tmp[i]<tmp[j]:
+            arr[k] = tmp[i]
+            i+=1
+        else:
+            arr[k] = tmp[j]
+            j+=1  
+  
+arr = [2, 5, 5, 6, 3, 90, 2]
+n = len(arr)
+tmp = [0]*n
+mergeSort(arr, 0, n-1)
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
+#### [剑指 Offer 51. 数组中的逆序对](https://leetcode.cn/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)
+
+```python
+class Solution:
+    def reversePairs(self, nums: List[int]) -> int:
+        def merge(l, r):
+            if l>=r: return 0
+            
+            m = (l+r)//2
+
+            res = merge(l, m) + merge(m+1, r)
+            tmp[l:r+1] = nums[l:r+1]
+            i, j = l, m+1
+            for k in range(l, r+1):
+                if i==m+1:
+                    nums[k] = tmp[j]
+                    j+=1
+                elif j==r+1:
+                    nums[k] = tmp[i]
+                    i+=1
+                elif tmp[i]>tmp[j]:
+                    res += (m-i+1)
+                    nums[k] = tmp[j]
+                    j+=1
+                else:
+                    nums[k] = tmp[i]
+                    i+=1
+            
+            return res
+        
+        n = len(nums)
+        tmp = [0]*n
+        return merge(0, n-1)
+```
+
+时间复杂度：$O(nlogn)$
 
 空间复杂度：$O(n)$
 
@@ -6767,6 +7275,30 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [剑指 Offer 56 - II. 数组中数字出现的次数 II](https://leetcode.cn/problems/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-ii-lcof/)
+
+```python
+class Solution:
+    def singleNumber(self, nums: List[int]) -> int:
+        bits = [0]*32
+        for num in nums:
+            for i in range(32):
+                bits[i] += (num&1)
+                num>>=1
+        
+        res = 0
+        base = 1
+        for i in range(32):
+            res += base*(bits[i]%3)
+            base<<=1
+        
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## 图论
 
 ### 拓扑排序
@@ -6871,6 +7403,41 @@ class MinStack:
 ```
 
 时间复杂度：$O(1)$
+
+空间复杂度：$O(n)$
+
+#### [剑指 Offer 41. 数据流中的中位数](https://leetcode.cn/problems/shu-ju-liu-zhong-de-zhong-wei-shu-lcof/)
+
+```python
+from heapq import heappush, heappop
+class MedianFinder:
+
+    def __init__(self):
+        """
+        initialize your data structure here.
+        """
+        self.A = [] # 小根堆，存放较大的一部分
+        self.B = [] # 大根堆，存放较小的一部分
+
+
+    def addNum(self, num: int) -> None:
+        if len(self.A)!=len(self.B):
+            # 此时len(A) = len(B) + 1
+            # 先push进A保证 A,B的正确性，再push进B
+            heappush(self.A, num)
+            heappush(self.B, -heappop(self.A))
+        else:
+            # 此时len(A) = len(B)
+            # 我们想让A多出来一个
+            heappush(self.B, -num)
+            heappush(self.A, -heappop(self.B))
+            
+
+    def findMedian(self) -> float:
+        return self.A[0] if len(self.A)!=len(self.B) else (self.A[0]-self.B[0])/2 
+```
+
+时间复杂度：$O(logn)$
 
 空间复杂度：$O(n)$
 
@@ -7593,7 +8160,67 @@ class Solution:
 
 空间复杂度：$O(n)$，极端情况下递归会达到线性级别
 
+#### [剑指 Offer 45. 把数组排成最小的数](https://leetcode.cn/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof/)
 
+```python
+class Solution:
+    def minNumber(self, nums: List[int]) -> str:
+        nums = [str(num) for num in nums]
+        def cmp(str1, str2):
+            if str1+str2>=str2+str1: return True
+            return False
+
+        def quick(s, start, end):
+            if start>=end: return
+            pivot = s[start]
+            i, j = start, end
+            while i<j:
+                while i<j and cmp(s[j], pivot):
+                    j-=1
+                s[i] = s[j]
+                while i<j and cmp(pivot, s[i]):
+                    i+=1
+                s[j] = s[i]
+            
+            s[i] = pivot
+            quick(s, start, i-1)
+            quick(s, i+1, end)
+        
+        quick(nums, 0, len(nums)-1)
+            
+
+        return ''.join(nums)
+```
+
+时间复杂度：$O(m*nlogn)$
+
+空间复杂度：$O(n)$
+
+#### [剑指 Offer 46. 把数字翻译成字符串](https://leetcode.cn/problems/ba-shu-zi-fan-yi-cheng-zi-fu-chuan-lcof/)
+
+```python
+class Solution:
+    def translateNum(self, num: int) -> int:
+        nums = []
+        while num:
+            nums.append(num%10)
+            num //= 10
+        
+        nums = nums[::-1]
+        n = len(nums)
+
+        dp = [0 for _ in range(n+1)]
+        dp[0] = 1
+        for i in range(1, n+1):
+            dp[i] += dp[i-1]
+            if i>=2 and (nums[i-2]==1 or (nums[i-2]==2 and nums[i-1]<=5)):
+                dp[i] += dp[i-2]
+        return dp[n]
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$ ，可优化至O(1)，一边dp一边算Nums
 
 ## 模拟题
 

@@ -667,9 +667,9 @@ def attention(q, k, v):
     def head_unshape(x):
         return x.transpose(1, 2).contiguous().reshape(batch_size, -1, head * dim_per_head)
 
-    query = head_shape(query)
-    key = head_shape(key)
-    value = head_shape(value)
+    q = head_shape(q)
+    k = head_shape(k)
+    v = head_shape(v)
 
     query = linear_querys(q)
     key = linear_keys(k)
@@ -769,6 +769,8 @@ class LayerNorm(nn.Module):
 ### add&norm的作用？
 
 利用的resnet的残差连接， 一是解决梯度消失的问题，二是解决权重矩阵的退化问题。
+
+对权重矩阵的退化问题补充一点解释：随着网络深度增加，模型会产生退化现象。它不是由过拟合产生的，而是由冗余的网络层学习了不是恒等映射的参数造成的。利用残差连接，在前向传播时，输入信号可以从任意低层直接传播到高层。由于包含了一个天然的恒等映射，一定程度上可以解决网络退化问题。
 
 ### layer norm和batch norm的区别？为什么cv常用bn，nlp常用ln？
 
@@ -900,7 +902,13 @@ https://zhuanlan.zhihu.com/p/74090249
 
 ### fastBERT
 
-减少BERT的decoder层数。先finetune，蒸馏时每一层decoder加上分类网络，计算其与最后一层的KL/JS散度。通过分类的不确定度（Uncertainty）是否达到阈值来判断是否再需要后续的decoder层
+减少BERT的decoder层数。先finetune，蒸馏时每一层decoder加上分类网络，计算其与最后一层的KL/JS散度。通过分类的不确定度（Uncertainty）是否达到阈值来判断是否再需要后续的decoder层。
+
+### 简述ELMO和BERT的区别，以及各自的优缺点
+
+ELMo是用两个方向的语言模型来训练bi-LSTM,其瓶颈在于能力受限而无法使模型变得更深。BERT使用了一种反其道而行之的套路，设置一个比语言模型（Language Model，简称LM）更简单的任务来做预训练，并且使用基于Transformer的Encoder来进行预训练从而使得模型变深。
+
+### 简述GPT和BERT的区别，以及各自的优缺点
 
 ## BERT和Transformer的位置编码区别
 
