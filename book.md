@@ -167,12 +167,6 @@ for idx, num in enumerate(nums):
 ```
 注意：前缀和有些时候需要初始化哈希表，因为我们要考虑`nums[:i]`的情况，具体如何初始化要看题目。
 
-| 题目 | 难度 | 链接 |
-| --- | --- | --- |
-| [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/) | Medium | https://leetcode-cn.com/problems/subarray-sum-equals-k/ |
-| [1248. 统计「优美子数组」](https://leetcode-cn.com/problems/count-number-of-nice-subarrays/) | Medium | https://leetcode-cn.com/problems/count-number-of-nice-subarrays/ |
-| [437. 路径总和 III](https://leetcode-cn.com/problems/path-sum-iii/) | Medium | https://leetcode-cn.com/problems/path-sum-iii/ |
-| [525. 连续数组](https://leetcode-cn.com/problems/contiguous-array/) | Medium | https://leetcode-cn.com/problems/contiguous-array/ |
 #### [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/)
 
 思路：任意连续子数组nums[i:j]之和都可以用total[j]-total[i]表示。
@@ -2575,18 +2569,6 @@ def binarySearch(arr, target):
 2. 计算middle时，python虽然不会整数溢出，但也要保证长度为1时，left和right的middle落在[left, right)区间。
 3. 若数组有target，上面的二分搜索返回的是`大于等于target的下界`，比如`[1,2,2,3], 2`返回的是`1`（即第一个2对应的位置）。如果不存在target，返回的是`大于target的下界`，比如`[1,2,2,4], 3`返回的是`3`（即第一个4对应的位置）。
 4. 如果需要找`等于target的上界`，即最后一个target对应的位置，只需要`binarySearch(arr, target+1)-1`即可。比如`[1,2,2,4], 2`，我们想找到最后一个2，应该这么调用 `ans = binarySearch([1,2,2,4], 2+1) - 1`。最后返回的是`2`。
-
-| 题目                                                         | 难度   | 链接                                                         |
-| ------------------------------------------------------------ | ------ | ------------------------------------------------------------ |
-| [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/) | Easy   | https://leetcode-cn.com/problems/search-insert-position/     |
-| [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Easy   | https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/ |
-| [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/) | Easy   | https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/     |
-| [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array/ |
-| [81. 搜索旋转排序数组 II](https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/) | Medium | https://leetcode-cn.com/problems/search-in-rotated-sorted-array-ii/ |
-| [153. 寻找旋转排序数组中的最小值](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/) | Medium | https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/ |
-| [154. 寻找旋转排序数组中的最小值 II](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/) | Hard   | https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/ |
-| [69. x 的平方根 ](https://leetcode-cn.com/problems/sqrtx/)   | Easy   | https://leetcode-cn.com/problems/sqrtx/                      |
-| [74. 搜索二维矩阵](https://leetcode-cn.com/problems/search-a-2d-matrix/) | Medium | https://leetcode-cn.com/problems/search-a-2d-matrix/         |
 
 #### [35. 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/)
 
@@ -7959,6 +7941,8 @@ class Solution:
 空间复杂度：$O(1)$
 
 #### [48. 旋转图像](https://leetcode.cn/problems/rotate-image/)
+
+向右旋转90度：先上下翻转，再对角线反转
 
 ```python
 class Solution:
