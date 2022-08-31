@@ -657,10 +657,31 @@ XGBoost对缺失数据有特定的处理方法，[详情参考上篇文章第7�
 
 ## word2vec
 
-### word2vec的词表如果很大的话，softmax如何优化？
+https://www.cnblogs.com/pinard/p/7160330.html
 
-1. 分层softmax(哈夫曼编码树)，每一层都是一个二分类
-2. 负采样
+### CBOW与Skip-Gram
+
+用词袋模型训练
+
+CBOW：用一个词的上下文去预测该词
+
+Skip-Gram：用一个词去预测它的上下文（取Softmax前n个词）
+
+### 分层Softmax
+
+https://www.cnblogs.com/pinard/p/7243513.html
+
+用哈夫曼编码树代替原来的softmax，每层做一次二分类。
+
+优点：提高模型训练的效率
+
+缺点：如果预测的词是生僻词，还是会很“辛苦”
+
+### 负采样
+
+https://www.cnblogs.com/pinard/p/7249903.html
+
+用负采样采样出Negative Samples,在正例和负例之间做二元逻辑回归。
 
 # transformer
 
