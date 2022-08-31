@@ -657,6 +657,95 @@ class Solution:
 
 空间复杂度：$O(1)$
 
+#### [剑指 Offer II 026. 重排链表](https://leetcode.cn/problems/LGjMqU/)
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def reorderList(self, head: ListNode) -> None:
+        """
+        Do not return anything, modify head in-place instead.
+        """
+        # 先找中间节点并切开
+        fast, slow = head.next, head
+        while fast and fast.next:
+            fast = fast.next.next
+            slow = slow.next
+        
+        mid = slow.next
+        slow.next = None
+
+        def reverse(head):
+            if not head: return None
+            last, cur = None, head
+            while cur:
+                tmp = cur.next
+                cur.next = last
+                last = cur
+                cur = tmp
+            return last
+        
+        # 反转后半部分
+        p1, p2 = head, reverse(mid)
+        
+        # 穿插合并
+        new_head = ListNode(-1)
+        cur = new_head
+        while p1 and p2:
+            cur.next = p1
+            cur = cur.next
+            p1 = p1.next
+            cur.next = p2
+            cur = cur.next
+            p2 = p2.next
+        cur.next = p1 if p1 else None
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [剑指 Offer II 028. 展平多级双向链表](https://leetcode.cn/problems/Qv1Da2/)
+
+记得把cur.child置为None
+
+```
+class Solution:
+    def flatten(self, head: 'Node') -> 'Node':
+        if not head: return None
+        def dfs(head):
+            if not head.next and not head.child:
+                return head, head
+            
+            last, cur = None, head
+            while cur:
+                tmp = cur.next
+                last = cur
+                if cur.child:
+                    child_head, child_tail = dfs(cur.child)
+                    cur.next = child_head
+                    child_head.prev = cur
+                    child_tail.next = tmp
+                    if tmp: tmp.prev = child_tail
+                    last = child_tail
+                cur.child = None
+        
+                cur = tmp
+            
+            return head, last
+
+        new_head, new_tail = dfs(head)
+        return new_head
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(h)$
+
 ## 二叉树
 
 ### 完全二叉树
