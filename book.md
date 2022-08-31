@@ -2368,6 +2368,8 @@ class Solution:
 
 #### [448. 找到所有数组中消失的数字](https://leetcode.cn/problems/find-all-numbers-disappeared-in-an-array/)
 
+解法一：
+
 ```python
 class Solution:
     def findDisappearedNumbers(self, nums: List[int]) -> List[int]:
@@ -2381,6 +2383,55 @@ class Solution:
                 res.append(i+1)
         
         return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+解法二：
+
+这里的交换注意用tmp
+
+```python
+class Solution:
+    def findDisappearedNumbers(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+
+        for i in range(n):
+            while (nums[i]!=i+1) and (nums[nums[i]-1]!=nums[i]):
+                tmp = nums[i]
+                nums[i] = nums[tmp-1]
+                nums[tmp-1] = tmp
+        res = []
+        for idx, num in enumerate(nums):
+            if num!=idx+1:
+                res.append(idx+1)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
+#### [41. 缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/)
+
+答案必定属于[1,n]，遇到此区间外的值直接忽略即可。
+
+```python
+class Solution:
+    def firstMissingPositive(self, nums: List[int]) -> int:
+        n = len(nums)
+        for i in range(n):
+            while 1<=nums[i]<=n and nums[i]!=i+1 and nums[nums[i]-1]!=nums[i]:
+                tmp = nums[i]
+                nums[i] = nums[tmp-1]
+                nums[tmp-1] = tmp
+        
+        for i in range(n):
+            if nums[i]!=i+1:
+                return i+1
+        return n+1
 ```
 
 时间复杂度：$O(n)$
