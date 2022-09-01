@@ -7488,7 +7488,7 @@ class MedianFinder:
         """
         initialize your data structure here.
         """
-        self.A = [] # 小根堆，存放较大的一部分
+        self.A = [] # 小根堆，存放较大的一部分，且len(A)>=len(B)
         self.B = [] # 大根堆，存放较小的一部分
 
 
@@ -7512,6 +7512,46 @@ class MedianFinder:
 时间复杂度：$O(logn)$
 
 空间复杂度：$O(n)$
+
+#### [703. 数据流中的第 K 大元素](https://leetcode.cn/problems/kth-largest-element-in-a-stream/)
+
+```python
+from heapq import heappush, heappop
+class KthLargest:
+
+    def __init__(self, k: int, nums: List[int]):
+        self.h = []
+        self.k = k
+        for i in range(min(k, len(nums))):
+            heappush(self.h, nums[i])
+        
+        if len(nums)>k:
+            for i in range(k, len(nums)):
+                self.add(nums[i])
+        
+
+
+    def add(self, val: int) -> int:
+        if len(self.h)<self.k:
+            heappush(self.h, val)
+        else:
+            if val>self.h[0]:
+                heappop(self.h)
+                heappush(self.h, val)
+        
+        if len(self.h)<self.k:
+            return -1
+        else:
+            return self.h[0]
+```
+
+时间复杂度：add为$O(logk)$，建堆为$O(nlogk)$
+
+空间复杂度：$O(n)$
+
+
+
+
 
 ## 组合/排列
 
@@ -8375,5 +8415,11 @@ class Solution:
 
 空间复杂度：$O(n)$
 
-
 # 脑筋急转弯题
+
+# 智力题
+
+# 概率题
+
+
+
