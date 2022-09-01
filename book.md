@@ -746,6 +746,35 @@ class Solution:
 
 空间复杂度：$O(h)$
 
+#### [剑指 Offer II 029. 排序的循环链表](https://leetcode.cn/problems/4ueAj6/)
+
+```python
+class Solution:
+    def insert(self, head: 'Node', insertVal: int) -> 'Node':
+        if not head: 
+            node = Node(insertVal)
+            node.next = node
+            return node
+        if head == head.next:
+            head.next = Node(insertVal)
+            head.next.next = head
+            return head
+
+        pre, cur = head, head.next
+        while True:
+            if (pre.val>cur.val and (insertVal>=pre.val or insertVal<=cur.val)) or (pre.val<=insertVal<=cur.val) or (cur==head):
+                pre.next = Node(insertVal)
+                pre.next.next = cur
+                break
+            
+            pre, cur = cur, cur.next
+        return head
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
+
 ## 二叉树
 
 ### 完全二叉树
@@ -6856,6 +6885,30 @@ class Solution:
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
+
+#### [887. 鸡蛋掉落](https://leetcode.cn/problems/super-egg-drop/)
+
+```python
+class Solution:
+    def superEggDrop(self, k: int, n: int) -> int:
+        if n==1: return 1
+        dp = [[0 for _ in range(n+1)] for _ in range(k+1)]
+        # dp[i][j]代表有i个鸡蛋，j次操作次数，能试出来的楼层数
+        for i in range(1, k+1):
+            dp[i][1] = 1 # 只有一次操作次数，只能试出来一层楼
+        
+        for i in range(1, k+1):
+            for j in range(2, n+1):
+                # 碎的话能试出来dp[i-1][j-1]楼，对应该楼层下方的楼层数量，不碎的话能试出来dp[i][j-1]楼，对应该楼层上方的楼层数量
+                dp[i][j] = dp[i-1][j-1] + dp[i][j-1] + 1
+                if i==k and dp[k][j]>=n:
+                    return j
+        return -1
+```
+
+时间复杂度：$O(n*k)$
+
+空间复杂度：$O(n*k)$
 
 ## 快速幂
 
