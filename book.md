@@ -1897,6 +1897,35 @@ class Solution:
 
 空间复杂度：$O(n)$
 
+一次遍历：
+
+```python
+class Solution:
+    def largestRectangleArea(self, heights: List[int]) -> int:
+        n = len(heights)
+
+        stack = [] # 单调递增栈
+        left = [-1]*n
+        right = [n]*n
+        for i in range(n):
+            cur = heights[i]
+            while stack and cur<heights[stack[-1]]:
+                idx = stack.pop()
+                right[idx] = i
+            left[i] = stack[-1] if stack else -1
+            stack.append(i)
+        
+        res = float('-inf')
+        for i in range(n):
+            cur = (right[i]-left[i]-1)*heights[i]
+            res = max(res, cur)
+        return res
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(n)$
+
 #### [85. 最大矩形](https://leetcode.cn/problems/maximal-rectangle/)
 
 ```python
@@ -1992,6 +2021,40 @@ class CQueue:
 时间复杂度：$O(n)$
 
 空间复杂度：$O(n)$
+
+#### [剑指 Offer II 037. 小行星碰撞](https://leetcode.cn/problems/XagZNi/)
+
+```python
+class Solution:
+    def asteroidCollision(self, asteroids: List[int]) -> List[int]:
+        n = len(asteroids)
+        res = []
+        for idx, num in enumerate(asteroids):
+            if num<0:
+                if not res or res[-1]<0:
+                    res.append(num)
+                    continue
+                cur = None
+                while res and res[-1]>0:
+                    last = res.pop()
+                    if last>-num:
+                        cur = last
+                        break
+                    elif last<-num:
+                        cur = num
+                    else:
+                        cur = 0
+                        break
+                if cur!=0:
+                    res.append(cur)
+            else:
+                res.append(num)
+        return res   
+```
+
+时间复杂度：$O(n)$
+
+空间复杂度：$O(1)$
 
 ## 并查集
 
@@ -7510,6 +7573,145 @@ class MedianFinder:
 ```
 
 时间复杂度：$O(logn)$
+
+空间复杂度：$O(n)$
+
+#### [剑指 Offer II 030. 插入、删除和随机访问都是 O(1) 的容器](https://leetcode.cn/problems/FortPu/)
+
+```python
+import random
+class RandomizedSet:
+
+    def __init__(self):
+        """
+        Initialize your data structure here.
+        """
+        self.arr = []
+        self.m = {}
+
+
+    def insert(self, val: int) -> bool:
+        """
+        Inserts a value to the set. Returns true if the set did not already contain the specified element.
+        """
+        if val not in self.m:
+            self.m[val] = len(self.arr)
+            self.arr.append(val)
+
+            return True
+        else:
+            return False
+
+
+    def remove(self, val: int) -> bool:
+        """
+        Removes a value from the set. Returns true if the set contained the specified element.
+        """
+        if val in self.m:
+            idx = self.m[val]  
+            self.arr[idx] = self.arr[-1]
+            self.m[self.arr[-1]] = idx
+
+            # 这里要注意最后再pop
+            self.m.pop(val)  
+            self.arr.pop()
+            
+            return True
+        else:
+            return False
+
+
+    def getRandom(self) -> int:
+        """
+        Get a random element from the set.
+        """
+        idx = random.randint(0, len(self.arr)-1)
+        return self.arr[idx]
+```
+
+时间复杂度：$O(1)$
+
+空间复杂度：$O(1)$
+
+#### [剑指 Offer II 031. 最近最少使用缓存](https://leetcode.cn/problems/OrIXps/)
+
+```python
+class Node:
+    def __init__(self, key=-1, val=-1, pre=None, next=None):
+        self.key = key
+        self.val = val
+        self.pre = pre
+        self.next = next
+
+class LRUCache:
+
+    def __init__(self, capacity: int):
+        self.hash = {}
+
+        self.head = Node()
+        self.tail = Node()
+        self.head.next = self.tail
+        self.tail.pre = self.head
+
+        self.capacity = capacity
+        self.size = 0
+
+
+    def get(self, key: int) -> int:
+        if key not in self.hash:
+            return -1
+        else:
+            node = self.hash[key]
+            # 把node插入到头部
+            self.moveToHead(node)
+            return node.val
+
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.hash:
+            # 变更值并且moveToHead
+            node = self.hash[key]
+            node.val = value
+            self.moveToHead(node)
+        else:
+            if self.size<self.capacity:
+                # 创建一个新的结点，并且插入到头部
+                node = Node(key=key, val=value)
+                self.hash[key] = node
+                head_next = self.head.next
+
+                self.head.next = node
+                node.pre, node.next = self.head, head_next
+                head_next.pre = node
+
+                self.size += 1
+            else:
+                # 删除队尾的一个节点再put
+                self.deleteTail()
+                self.put(key, value)
+
+    
+    def moveToHead(self, node):
+        cur_pre = node.pre
+        cur_next = node.next
+        cur_pre.next, cur_next.pre = cur_next, cur_pre
+
+        head_next = self.head.next
+        self.head.next = node
+        node.next, node.pre = head_next, self.head
+        head_next.pre = node
+    
+    def deleteTail(self):
+        self.size -= 1
+        tail_pre = self.tail.pre
+        key = tail_pre.key
+        tail_pre_pre = tail_pre.pre
+        tail_pre_pre.next = self.tail
+        self.tail.pre = tail_pre_pre
+        self.hash.pop(key)
+```
+
+时间复杂度：$O(1)$
 
 空间复杂度：$O(n)$
 

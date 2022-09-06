@@ -936,6 +936,20 @@ Transformer在两个地方进行了权重共享：
 
 
 
+# 预训练模型
+
+发展史：ELMO→GPT→BERT→GPT-2→Prompt
+
+ELMO：基于双向语言模型和双向LSTM预训练
+
+GPT：放弃LSTM，改用Transformer decoder，基于单向语言模型预训练
+
+BERT：基于Transformer encoder和双向语言模型，两个任务：masked LM和next sentence prediction
+
+GPT-2：更大规模的GPT
+
+Prompt：改变下游任务的形态使其适配预训练模型
+
 # BERT
 
 ## BERT基本结构
@@ -1008,5 +1022,93 @@ Segment-embedding：BERT在解决双句分类任务（如判断两段文本在�
 Position-embedding：BERT使用transformer编码器，通过self-attention机制学习句子的表征，self-attention不关注token的位置信息，所以为了能让transformer学习到token的位置信息，在输入时增加了position-embedding。
 
 
+
+# GPT
+
+# GPT-2
+
+# Prompt
+
+https://juejin.cn/post/7061997371785216037
+
+## NLP范式演化历程
+
+基于非神经网络的全监督学习→基于神经网络的全监督学习→预训练+微调→prompt
+
+**全监督学习（非神经网络）：** 仅在目标任务的输入输出样本数据集上训练特定任务模型，严重依赖特征工程。
+
+**全监督学习（神经网络）：** 使得特征学习与模型训练相结合，于是研究重点转向了架构工程，即通过设计一个网络架构（如CNN，RNN，Transformer）能够学习数据特征。
+
+**Pre-train，Fine-tune：** 先在大数据集上预训练，再根据特定任务对模型进行微调，以适应于不同的下游任务。在这种范式下，研究重点转向了目标工程，设计在预训练和微调阶段使用的训练目标（损失函数）。
+
+**Pre-train，Prompt，Predict：** 无需要fine-tune，让预训练模型直接适应下游任务。方便省事，不需要每个任务每套参数，突破数据约束。
+
+## Prompt是什么
+
+将下游任务的输入输出形式改造成预训练任务中的形式，即 MLM (Masked Language Model) 的形式。
+
+**原任务：**
+
+Input: `I love this movie.`
+
+Output: `++ (very positive)`
+
+**改造后：**
+
+Prefix prompt 版（prompt 槽在文本末尾，适合生成任务或自回归 LM，如 GPT-3）：
+ Input: `I love this movie. Overall, the movie is [Z].`
+
+Cloze prompt 版（prompt 槽在文本中间或结尾，适合 MLM 任务，如 BERT）：
+ Input: `I love this movie. Overall, it was a [Z] movie.`
+
+Output: `[Z] = ‘good’`
+
+
+
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3622bcb6076f48ee9bc9dbedaf96b985~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp?)
+
+之前的预训练+微调是让预训练模型去适应下游任务，而 Prompt 则是调整下游任务来适应预训练模型。
+
+![](https://ucc.alicdn.com/pic/developer-ecology/6ec32c8401bd477bb777b34d5b351af4.png)
+
+生成任务的常用Prompt如上图所示。
+
+## Why Prompt Works？
+
+比起微调从零开始学习一个分类器（举例），建立预训练模型输出与分类结果之间的对应，Prompt 的任务形式与预训练相同，直接可以从输入中获取更多的语义信息，因此即便是少量数据甚至是 zero-shot 也可能取得不错的效果。
+
+## Prompt 的优点
+
+如上所述，prompt 的引入使得预训练模型提取的特征更自然地用于下游任务的预测，特征质量更高。不需要为下游任务新增一个分类器，因为任务形式与预训练模型本身相适应；也不需要从零开始训练本来要加的这个分类器。只需要建立一个简单的映射，将 prompt 范式的输出再转变成下游任务需要的输出形式。在少样本甚至零样本场景下表现优秀。
+
+## How Prompt
+
+### 如何构建 Prompt 的 pipeline
+
+- Prompt Addition：在输入中添加 Prompt；
+- Answer Search：根据改造后的输入预测[Z]；
+- Answer Mapping：把预测的结果转变成下游任务所需要的形式。
+
+### 如何设计自己的 Prompt 模型
+
+- **预训练模型**的选择；
+
+- Prompt Engineering
+
+  ：选择合适的 Prompt，包括两方面：
+
+  - prefix prompt 还是 cloze prompt？
+  - 手动设计还是自动构建（搜索、优化、生成等）？
+
+- **Answer Engineering**：选择合适的方法将预测结果映射回下游任务需要的输出形式；
+
+- **Multi-prompt**：设计多个 prompt 以获取更好的效果（集成学习、数据增强等）；
+
+- 训练策略
+
+  ：Prompt 模型可能会含有除了 LM 模型以外的 Prompt 参数，训练策略需要考虑的包括：
+
+  - 有没有额外的 Prompt Params？
+  - 是否更新这些 Prompt 参数？
 
 
