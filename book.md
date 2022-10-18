@@ -7558,6 +7558,46 @@ class Solution:
 
 空间复杂度：$O(m+n)$
 
+## 扫描线
+
+#### [218. 天际线问题](https://leetcode.cn/problems/the-skyline-problem/)
+
+对于左端点，如果其为最大高度，那么它为一个有效的坐标
+
+对于右端点，如果它是下降之后的端点，那么它为一个有效的坐标
+
+```python
+from sortedcontainers import SortedList
+
+class Solution:
+    def getSkyline(self, buildings: List[List[int]]) -> List[List[int]]:
+        points = []
+        for left, right, height in buildings:
+            points.append([left, -height])
+            points.append([right, height])
+        
+        points.sort()
+        q = SortedList([0])
+        prev = 0 # 保存上一个高度
+        res = []
+
+        for x, y in points:
+            if y<0: # 左端点
+                q.add(-y)
+            else: # 右端点，当前高度已经走完了
+                q.remove(y)
+            
+            cur = q[-1] # 当前高度
+            if cur!=prev: # 当前高度和上一个不一样，即为一个有效拐角
+                res.append([x, cur])
+                prev = cur
+        return res
+```
+
+时间复杂度：$O(nlogn)$
+
+空间复杂度：$O(n)$
+
 # 特定类型题
 
 ## 数据结构题
