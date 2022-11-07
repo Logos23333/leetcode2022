@@ -938,7 +938,7 @@ class Solution(object):
 
 空间复杂度：$O(h)$，其中h为树的高度，也就是递归时栈的开销。
 
-```
+```python
 class Solution:
     def treeToDoublyList(self, root: 'Node') -> 'Node':
         self.pre = None
